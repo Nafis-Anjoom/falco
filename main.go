@@ -1,6 +1,7 @@
 package main
 
 import (
+	"chat/chat"
 	"log"
 	"net/http"
 
@@ -8,12 +9,11 @@ import (
 )
 
 func main() {
+    server := chat.NewServer()
+    go server.Run()
+
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         log.Printf("Welcome to the homepage!")
-    })
-
-    http.HandleFunc("/about", func(w http.ResponseWriter, r *http.Request) {
-        log.Printf("This is the about page.")
     })
 
     http.HandleFunc("/echo", func(w http.ResponseWriter, r *http.Request) {
@@ -21,19 +21,12 @@ func main() {
         echo(w, r)
     })
 
-    // http.HandleFunc("/chat", func(w http.ResponseWriter, r *http.Request) {
-    //     conn, err := upgrader.Upgrade(w, r, nil)
-    //     if err != nil {
-    //         log.Println(err)
-    //     }
-    //
-    //     client := client.Client {
-    //         SendBuf: make(chan []byte, 1024),
-    //         Conn: conn,
-    //     }
-    // })
+    http.HandleFunc("/chat", func(w http.ResponseWriter, r *http.Request) {
+        chat.ServeWs(server, w, r)
+    })
 
-    http.ListenAndServe(":3000", nil)
+    log.Printf("starting server on localhost:%d", 3000)
+    log.Fatal(http.ListenAndServe(":3000", nil))
 }
 
 var upgrader = websocket.Upgrader {

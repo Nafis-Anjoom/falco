@@ -8,28 +8,32 @@ import (
 )
 
 func main() {
-    mux := http.NewServeMux()
-
-    mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         log.Printf("Welcome to the homepage!")
     })
 
-    mux.HandleFunc("/about", func(w http.ResponseWriter, r *http.Request) {
+    http.HandleFunc("/about", func(w http.ResponseWriter, r *http.Request) {
         log.Printf("This is the about page.")
-        echo(w, r)
     })
 
-    mux.HandleFunc("/echo", func(w http.ResponseWriter, r *http.Request) {
+    http.HandleFunc("/echo", func(w http.ResponseWriter, r *http.Request) {
         log.Printf("This is the echo page.")
         echo(w, r)
     })
 
-    s := http.Server {
-        Addr: ":3000",
-        Handler: mux,
-    }
+    // http.HandleFunc("/chat", func(w http.ResponseWriter, r *http.Request) {
+    //     conn, err := upgrader.Upgrade(w, r, nil)
+    //     if err != nil {
+    //         log.Println(err)
+    //     }
+    //
+    //     client := client.Client {
+    //         SendBuf: make(chan []byte, 1024),
+    //         Conn: conn,
+    //     }
+    // })
 
-    s.ListenAndServe()
+    http.ListenAndServe(":3000", nil)
 }
 
 var upgrader = websocket.Upgrader {
@@ -48,14 +52,14 @@ func echo(w http.ResponseWriter, r *http.Request) {
     defer conn.Close()
 
     for {
-        messageType, message, err := conn.ReadMessage()
+        _, message, err := conn.ReadMessage()
         if err != nil {
             log.Println("error", err)
         }
 
-        log.Println("message receieved:", message)
+        log.Println("message receieved:", string(message))
         
-        err = conn.WriteMessage(messageType, message)
+        err = conn.WriteMessage(websocket.TextMessage, message)
         if err != nil {
             log.Println("error", err)
         }

@@ -31,11 +31,11 @@ func (s *Server) Run() {
 			if _, ok := s.Clients[client]; ok {
 				delete(s.Clients, client)
 			}
-		case message := <-s.Broadcast:
-            log.Println("broadcasting message:", string(message))
-			for client := range s.Clients {
-				client.buff <- message
-			}
+		// case message := <-s.Broadcast:
+		//           log.Println("broadcasting message:", string(message))
+		// 	for client := range s.Clients {
+		// 		client.buff <- message
+		// 	}
 		}
 	}
 }

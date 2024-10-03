@@ -23,11 +23,16 @@ func (mm *MessageModel) InsertMessage(msg *Message) error {
     return nil
 }
 
-func (mm *MessageModel) GetUser(msgId uint64) (*Message, error) {
+func (mm *MessageModel) GetMessage(chatId uint64, msgId uint64) (*Message, error) {
     msg, ok := mm.messageStorage[msgId]
     if !ok {
+        log.Printf("message not found. ChatId: %d. msgId: %d\n", chatId, msgId)
         return nil, RecordNotFoundError
     }
 
     return msg, nil
 }
+
+// func (mm *MessageModel) GetMessagesByChat(chatId) ([]*Message, error) {
+//
+// }

@@ -6,8 +6,6 @@ import (
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/gorilla/websocket"
 )
 
 type application struct {
@@ -35,10 +33,4 @@ func main() {
         messageService: chat.NewMessageService(&models),
     }
     app.serve()
-}
-
-var upgrader = websocket.Upgrader {
-    CheckOrigin: func(r *http.Request) bool {
-        return true
-    },
 }

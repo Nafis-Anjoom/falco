@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
+    
+	"chat/utils"
 
 	"github.com/gorilla/websocket"
 )
@@ -10,7 +12,7 @@ import (
 
 func (app *application) echoHandler(w http.ResponseWriter, r *http.Request) {
     log.Println("echo")
-    conn, err := upgrader.Upgrade(w, r, nil)
+    conn, err := utils.Upgrader.Upgrade(w, r, nil)
     if err != nil {
         log.Println(err)
     }

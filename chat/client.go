@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
+    "chat/utils"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -12,12 +14,6 @@ type Client struct {
 	userId uint64
 	conn   *websocket.Conn
 	buff   chan *MessageRequest
-}
-
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
 }
 
 func (c *Client) readClient(ms *MessageService, conn *websocket.Conn) {
@@ -60,7 +56,7 @@ func ServeWs(ms *MessageService, w http.ResponseWriter, r *http.Request) {
 
 	log.Println("userId", userId)
 
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := utils.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("error during upgrade:", err)
 		return

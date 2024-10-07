@@ -3,13 +3,18 @@ package main
 import (
 	"chat/chat"
 	"chat/database"
+	"context"
 	"log"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type application struct {
     messageService *chat.MessageService
+    models *database.Models
 }
 
 func (app *application) serve() {
@@ -28,9 +33,19 @@ func (app *application) serve() {
 }
 
 func main() {
-    models := database.NewModels()
-    app := &application{
-        messageService: chat.NewMessageService(&models),
+    postgresUrl := os.Getenv("DATABASE_URL")
+
+    log.Println("database url", postgresUrl)
+
+    dbPool, err := pgxpool.New(context.Background(), postgresUrl)
+    if err != nil {
+        log.Fatalln("unable to open database connection")
     }
+
+    app := &application{
+        messageService: chat.NewMessageService(),
+        models: database.NewModels(dbPool),
+    }
+
     app.serve()
 }

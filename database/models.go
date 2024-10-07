@@ -1,6 +1,10 @@
 package database
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
 var (
     RecordNotFoundError = errors.New("record not found")
@@ -11,15 +15,9 @@ type Models struct {
     Messages MessageModel
 }
 
-func NewModels() Models {
-    return Models{
-        Users: UserModel{
-            userStorage: make(map[uint64]*User),
-            nextId: 0,
-        },
-        Messages: MessageModel{
-            messageStorage: make(map[uint64]*Message),
-            nextId: 0,
-        },
+func NewModels(dbPool *pgxpool.Pool) *Models {
+    return &Models{
+        Users: UserModel{ dbPool: dbPool },
+        Messages: MessageModel{ dbPool: dbPool },
     }
 }

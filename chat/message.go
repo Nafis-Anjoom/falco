@@ -26,13 +26,12 @@ type MessageService struct {
 	deregister        chan *userConnection
 }
 
-func NewMessageService(models *database.Models) *MessageService {
+func NewMessageService() *MessageService {
 	return &MessageService{
 		MessageBuff:       make(chan *MessageRequest, 512),
 		activeConnections: make(map[uint64]*Client),
 		register:          make(chan *userConnection),
 		deregister:        make(chan *userConnection),
-        models: models,
 	}
 }
 

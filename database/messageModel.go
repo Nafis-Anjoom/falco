@@ -1,6 +1,8 @@
 package database
 
-import "log"
+import (
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
 type Message struct {
     Id uint64
@@ -10,27 +12,16 @@ type Message struct {
 }
 
 type MessageModel struct {
-    messageStorage map[uint64]*Message
-    nextId uint64
+    dbPool *pgxpool.Pool
 }
 
 func (mm *MessageModel) InsertMessage(msg *Message) error {
-    mm.messageStorage[mm.nextId] = msg
-    log.Println("message stored", msg)
-    msg.Id = mm.nextId
-    mm.nextId += 1
 
     return nil
 }
 
 func (mm *MessageModel) GetMessage(chatId uint64, msgId uint64) (*Message, error) {
-    msg, ok := mm.messageStorage[msgId]
-    if !ok {
-        log.Printf("message not found. ChatId: %d. msgId: %d\n", chatId, msgId)
-        return nil, RecordNotFoundError
-    }
-
-    return msg, nil
+    return nil, nil
 }
 
 // func (mm *MessageModel) GetMessagesByChat(chatId) ([]*Message, error) {

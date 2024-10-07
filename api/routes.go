@@ -12,17 +12,15 @@ func (app *application) routes() http.Handler {
     mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         log.Printf("Welcome to the homepage!")
     })
-    mux.HandleFunc("/temp", func(w http.ResponseWriter, r *http.Request) {
-        qp := r.URL.Query()
 
-        log.Println(qp)
-    })
     mux.HandleFunc("/echo", app.echoHandler)
 
-    mux.HandleFunc("/chat", func(w http.ResponseWriter, r *http.Request) {
+    mux.HandleFunc("GET /chat", func(w http.ResponseWriter, r *http.Request) {
         chat.ServeWs(app.messageService, w, r)
     })
 
+    mux.HandleFunc("GET /user/{id}", app.getUserByIdHandler) 
+    mux.HandleFunc("POST /user", app.createUserHandler) 
+
     return mux
 }
-

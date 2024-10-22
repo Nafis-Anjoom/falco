@@ -11,7 +11,7 @@ import (
 )
 
 type createUserRequest struct {
-	Id        uint64 `json:"id,omitempty"`
+	Id        uint32 `json:"id,omitempty"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
@@ -40,7 +40,6 @@ func (app *application) createUserHandler(writer http.ResponseWriter, request *h
 	}
 
 	input.Id = id
-	log.Println(input)
 	utils.WriteJSONResponse(writer, http.StatusCreated, input)
 }
 

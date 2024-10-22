@@ -7,7 +7,7 @@ import (
 type Message struct {
     Id uint64
     ChatId uint64
-    SenderId uint64
+    SenderId uint32
     Content string
 }
 
@@ -16,7 +16,6 @@ type MessageModel struct {
 }
 
 func (mm *MessageModel) InsertMessage(msg *Message) error {
-
     return nil
 }
 
@@ -24,6 +23,6 @@ func (mm *MessageModel) GetMessage(chatId uint64, msgId uint64) (*Message, error
     return nil, nil
 }
 
-// func (mm *MessageModel) GetMessagesByChat(chatId) ([]*Message, error) {
-//
-// }
+func (mm *MessageModel) GetMessagesByChat(chatId uint64) ([]*Message, error) {
+    return nil, nil
+}

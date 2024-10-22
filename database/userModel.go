@@ -9,59 +9,59 @@ import (
 )
 
 type User struct {
-    Id uint64 `json:"id"`
-    FirstName string `json:"first_name"`
-    LastName string `json:"last_name"`
-    Email string `json:"email"`
+	Id        uint32 `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
 }
 
 type UserModel struct {
-    dbPool *pgxpool.Pool
+	dbPool *pgxpool.Pool
 }
 
-func (um *UserModel) InsertUser(user *User) (uint64, error) {
-    sqlStmt := `INSERT INTO public.user(firstName, lastName, email) VALUES ($1, $2, $3) RETURNING id`
-    row := um.dbPool.QueryRow(context.Background(), sqlStmt, user.FirstName, user.LastName, user.Email)
-    var id uint64
-    err := row.Scan(&id)
-    if err != nil {
-        return 0, err
-    }
-    return id, nil
+func (um *UserModel) InsertUser(user *User) (uint32, error) {
+	sqlStmt := `INSERT INTO public.user(firstName, lastName, email) VALUES ($1, $2, $3) RETURNING id`
+	row := um.dbPool.QueryRow(context.Background(), sqlStmt, user.FirstName, user.LastName, user.Email)
+	var id uint32
+	err := row.Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
 }
 
 func (um *UserModel) GetUserById(userId uint64) (*User, error) {
-    sqlStmt := `SELECT * FROM public.user where id = $1`
+	sqlStmt := `SELECT * FROM public.user where id = $1`
 
-    row := um.dbPool.QueryRow(context.Background(), sqlStmt, userId)
+	row := um.dbPool.QueryRow(context.Background(), sqlStmt, userId)
 
-    var user User
-    err := row.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email)
-    if err != nil {
-        switch {
-        case errors.Is(err, pgx.ErrNoRows):
-            return nil, RecordNotFoundError
-        default:
-            return nil, err
-        }
-    }
+	var user User
+	err := row.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email)
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, RecordNotFoundError
+		default:
+			return nil, err
+		}
+	}
 
-    return &user, nil
+	return &user, nil
 }
 
 func (um *UserModel) DeleteUserById(userId uint64) error {
-    sqlStmt := `UPDATE TABLE public.user SET deleted = true WHERE id = $1`
+	sqlStmt := `UPDATE TABLE public.user SET deleted = true WHERE id = $1`
 
-    _, err := um.dbPool.Exec(context.Background(), sqlStmt, userId)
+	_, err := um.dbPool.Exec(context.Background(), sqlStmt, userId)
 
-    if err != nil {
-        switch {
-        case errors.Is(err, pgx.ErrNoRows):
-            return RecordNotFoundError
-        default:
-            return err
-        }
-    }
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return RecordNotFoundError
+		default:
+			return err
+		}
+	}
 
-    return nil
+	return nil
 }

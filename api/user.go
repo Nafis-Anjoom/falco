@@ -76,3 +76,36 @@ func (app *application) getUserByIdHandler(writer http.ResponseWriter, request *
 		return
 	}
 }
+
+func (app *application) deleteUserById(writer http.ResponseWriter, request *http.Request) {
+	param := request.PathValue("id")
+	if param == "" {
+		err := errors.New("missing id param")
+		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+		return
+	}
+
+	userId, err := strconv.ParseUint(param, 10, 64)
+	if err != nil {
+		err := errors.New("id parameter is not an integer")
+		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+		return
+	}
+
+    err = app.models.Users.DeleteUserById(userId)
+	if err != nil {
+		switch {
+		case errors.Is(err, database.RecordNotFoundError):
+			utils.WriteErrorResponse(writer, request, http.StatusNotFound, err)
+		default:
+			utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+		}
+		return
+	}
+
+    err = utils.WriteJSONResponse(writer, http.StatusOK, nil)
+	if err != nil {
+		utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
+		return
+	}
+}

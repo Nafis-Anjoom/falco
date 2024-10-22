@@ -48,3 +48,20 @@ func (um *UserModel) GetUserById(userId uint64) (*User, error) {
 
     return &user, nil
 }
+
+func (um *UserModel) DeleteUserById(userId uint64) error {
+    sqlStmt := `UPDATE TABLE public.user SET deleted = true WHERE id = $1`
+
+    _, err := um.dbPool.Exec(context.Background(), sqlStmt, userId)
+
+    if err != nil {
+        switch {
+        case errors.Is(err, pgx.ErrNoRows):
+            return RecordNotFoundError
+        default:
+            return err
+        }
+    }
+
+    return nil
+}

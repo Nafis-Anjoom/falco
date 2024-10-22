@@ -14,9 +14,9 @@ var errorMessageMap = map[int]string {
 }
 
 type ErrorResponse struct {
-	Message   string
-	TimeStamp time.Time
-	Path      string
+    Message   string `json:"message"`
+	TimeStamp time.Time `json:"timestamp"`
+	Path      string `json:"path"`
 }
 
 func WriteJSONResponse(writer http.ResponseWriter, status int, data any) error {

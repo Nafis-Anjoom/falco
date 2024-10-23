@@ -9,7 +9,6 @@ type MessageRequest struct {
 	SenderId  uint32 `json:"sender_id"`
 	ChatId    uint64 `json:"chat_id"`
 	Content   string `json:"content"`
-	Timestamp int64  `json:"timestamp"`
 }
 
 type userConnection struct {

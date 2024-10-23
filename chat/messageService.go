@@ -6,32 +6,32 @@ import (
 )
 
 type MessageRequest struct {
-	SenderId  uint64 `json:"sender_id"`
+	SenderId  uint32 `json:"sender_id"`
 	ChatId    uint64 `json:"chat_id"`
 	Content   string `json:"content"`
 	Timestamp int64  `json:"timestamp"`
 }
 
 type userConnection struct {
-	userId uint64
+	userId uint32
 	conn   *Client
 }
 
 type MessageService struct {
 	MessageBuff       chan *MessageRequest
-	nextId            uint64
 	models            *database.Models
-	activeConnections map[uint64]*Client
+	activeConnections map[uint32]*Client
 	register          chan *userConnection
 	deregister        chan *userConnection
 }
 
-func NewMessageService() *MessageService {
+func NewMessageService(models *database.Models) *MessageService {
 	return &MessageService{
 		MessageBuff:       make(chan *MessageRequest, 512),
-		activeConnections: make(map[uint64]*Client),
+		activeConnections: make(map[uint32]*Client),
 		register:          make(chan *userConnection),
 		deregister:        make(chan *userConnection),
+		models:            models,
 	}
 }
 
@@ -47,13 +47,32 @@ func (m *MessageService) Run() {
 				delete(m.activeConnections, user.userId)
 			}
 		case msgIn := <-m.MessageBuff:
+            // converting to signed int because the db is using signed integers
+            // have to convert to unsigned during reception
 			msg := &database.Message{
-				ChatId:   msgIn.ChatId,
-				SenderId: msgIn.SenderId,
+				ChatId:   int64(msgIn.ChatId),
+				SenderId: int32(msgIn.SenderId),
 				Content:  msgIn.Content,
 			}
-			m.models.Messages.InsertMessage(msg)
-			log.Println("successfully inserted message")
+			log.Printf("message received: %+v\n", *msg)
+			err := m.models.Messages.InsertMessage(msg)
+			if err != nil {
+				m.reportNotSent(msgIn, err)
+			}
 		}
+	}
+}
+
+func (m *MessageService) reportNotSent(msg *MessageRequest, err error) {
+	client, found := m.activeConnections[msg.SenderId]
+	if found {
+		// TODO: implement a struct for sending message status : sent, not sent, read by
+		errorMsg := &MessageRequest{
+			SenderId: msg.SenderId,
+			ChatId:   msg.ChatId,
+			Content:  err.Error(),
+		}
+
+		client.buff <- errorMsg
 	}
 }

@@ -2,29 +2,29 @@ package chat
 
 import (
 	"log"
+	"math/rand/v2"
 	"net/http"
 	"strconv"
 
-    "chat/utils"
+	"chat/utils"
 
 	"github.com/gorilla/websocket"
 )
 
 type Client struct {
-	userId uint64
+	userId uint32
 	conn   *websocket.Conn
 	buff   chan *MessageRequest
 }
 
 func (c *Client) readClient(ms *MessageService, conn *websocket.Conn) {
 	for {
-        var msg MessageRequest
+		var msg MessageRequest
 		err := conn.ReadJSON(&msg)
 		if err != nil {
 			log.Println("error occured during read from client:", err)
 			continue
 		}
-		log.Printf("%+v\n", msg)
 		ms.MessageBuff <- &msg
 	}
 }
@@ -43,24 +43,24 @@ func (c *Client) writeClient(conn *websocket.Conn) {
 func ServeWs(ms *MessageService, w http.ResponseWriter, r *http.Request) {
 	qp := r.URL.Query()
 
-	if !qp.Has("userId") || !qp.Has("chatId") {
-		log.Println("missing userId or chatId")
+	if !qp.Has("chatId") {
+		log.Println("missing chatId")
 		return
+	}
+    _, err := strconv.ParseUint(qp.Get("chatId"), 10, 64)
+	if err != nil {
+		log.Println("error parsing chatId")
 	}
 
 	log.Println("attempting to set up socket. Source: ", r.RemoteAddr)
-	userId, err := strconv.ParseUint(qp.Get("userId"), 10, 64)
-	if err != nil {
-		log.Println("error parsing userId")
-	}
-
-	log.Println("userId", userId)
 
 	conn, err := utils.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("error during upgrade:", err)
 		return
 	}
+
+	userId := rand.Uint32()
 
 	client := &Client{
 		userId: userId,

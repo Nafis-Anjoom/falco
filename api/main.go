@@ -56,10 +56,15 @@ func main() {
         log.Fatalln("unable to open database connection")
     }
 
+    // there should be a better way to initialize models and messageService
+    // models should not be a top level field in application. Then all services should have a models field
+    models := database.NewModels(dbPool)
+    messageService := chat.NewMessageService(models)
+
     app := &application{
         config: config,
-        messageService: chat.NewMessageService(),
-        models: database.NewModels(dbPool),
+        messageService: messageService,
+        models: models,
     }
 
     app.serve()

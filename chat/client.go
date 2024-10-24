@@ -2,7 +2,6 @@ package chat
 
 import (
 	"log"
-	"math/rand/v2"
 	"net/http"
 	"strconv"
 
@@ -43,14 +42,15 @@ func (c *Client) writeClient(conn *websocket.Conn) {
 func ServeWs(ms *MessageService, w http.ResponseWriter, r *http.Request) {
 	qp := r.URL.Query()
 
-	if !qp.Has("chatId") {
-		log.Println("missing chatId")
+	if !qp.Has("userId") {
+		log.Println("missing userId")
 		return
 	}
-    _, err := strconv.ParseUint(qp.Get("chatId"), 10, 64)
+    userId, err := strconv.ParseUint(qp.Get("userId"), 10, 32)
 	if err != nil {
-		log.Println("error parsing chatId")
+        log.Println("error parsing userId: ", err.Error())
 	}
+
 
 	log.Println("attempting to set up socket. Source: ", r.RemoteAddr)
 
@@ -60,20 +60,18 @@ func ServeWs(ms *MessageService, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId := rand.Uint32()
-
 	client := &Client{
-		userId: userId,
+		userId: uint32(userId),
 		conn:   conn,
 		buff:   make(chan *MessageRequest, 256),
 	}
 
 	userConn := &userConnection{
-		userId: userId,
+		userId: uint32(userId),
 		conn:   client,
 	}
 
-	ms.register <- userConn
+	ms.register <-userConn
 
 	go client.readClient(ms, conn)
 	go client.writeClient(conn)

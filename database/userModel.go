@@ -13,6 +13,7 @@ type User struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
+	IsDeleted bool   `json:"isDeleted"`
 }
 
 type UserModel struct {
@@ -20,7 +21,7 @@ type UserModel struct {
 }
 
 func (um *UserModel) InsertUser(user *User) (uint32, error) {
-	sqlStmt := `INSERT INTO public.user(firstName, lastName, email) VALUES ($1, $2, $3) RETURNING id`
+	sqlStmt := `INSERT INTO public.users(firstName, lastName, email) VALUES ($1, $2, $3) RETURNING id`
 	row := um.dbPool.QueryRow(context.Background(), sqlStmt, user.FirstName, user.LastName, user.Email)
 	var id uint32
 	err := row.Scan(&id)
@@ -31,12 +32,12 @@ func (um *UserModel) InsertUser(user *User) (uint32, error) {
 }
 
 func (um *UserModel) GetUserById(userId uint64) (*User, error) {
-	sqlStmt := `SELECT * FROM public.user where id = $1`
+	sqlStmt := `SELECT * FROM public.users WHERE id = $1`
 
 	row := um.dbPool.QueryRow(context.Background(), sqlStmt, userId)
 
 	var user User
-	err := row.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email)
+	err := row.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.IsDeleted)
 	if err != nil {
 		switch {
 		case errors.Is(err, pgx.ErrNoRows):
@@ -50,10 +51,9 @@ func (um *UserModel) GetUserById(userId uint64) (*User, error) {
 }
 
 func (um *UserModel) DeleteUserById(userId uint64) error {
-	sqlStmt := `UPDATE TABLE public.user SET deleted = true WHERE id = $1`
+	sqlStmt := `UPDATE public.users SET isDeleted = true WHERE id = $1`
 
 	_, err := um.dbPool.Exec(context.Background(), sqlStmt, userId)
-
 	if err != nil {
 		switch {
 		case errors.Is(err, pgx.ErrNoRows):

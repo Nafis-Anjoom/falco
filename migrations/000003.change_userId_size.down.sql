@@ -1,1 +1,0 @@
-ALTER TABLE public.user ALTER COLUMN id TYPE BIGINT;

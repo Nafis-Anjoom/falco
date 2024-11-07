@@ -46,13 +46,15 @@ func (m *MessageService) Run() {
 	}
 }
 
-func (m *MessageService) handleOneToOneMessage(message *protocol.MessageSend) error {
+func (m *MessageService) handleOneToOneMessage(message *protocol.MessageSend) {
+    messageId := m.IdGenerator.Generate()
+    timestamp := time.Now().UTC()
 	oneToOneMessage := &database.OneToOneMessage{
-		MessageId:   m.IdGenerator.Generate(),
+		MessageId:   messageId,
 		SenderId:    message.SenderId,
 		RecipientId: message.RecipientId,
 		Content:     message.Content,
-		TimeStamp:   time.Now().UTC(),
+		TimeStamp:   timestamp,
 	}
 
 	err := m.models.Messages.InsertOneToOneMessage(oneToOneMessage)
@@ -60,8 +62,30 @@ func (m *MessageService) handleOneToOneMessage(message *protocol.MessageSend) er
 	if err != nil {
 		log.Println(err)
 		m.failToSend(message)
+        return
 	}
-	return nil
+
+    m.ackMessage(messageId, message.SenderId, message.RecipientId, message.SentAt, timestamp)
+}
+
+func (m *MessageService) ackMessage(messageId int64, senderId int64, recipientId int64,
+    sentAt time.Time, timestamp time.Time) {
+    messageSentAck := &protocol.MessageSentSuccess{
+        MessageId: messageId,
+        RecipientId: recipientId,
+        Timestamp: timestamp,
+        SentAt: sentAt,
+    }
+
+    packet := protocol.NewPacket(protocol.MSG_SENT_SUCCESS, messageSentAck)
+    client, found := m.activeConnections[senderId]
+    // if client not active, then enqueue in message queue
+    if !found {
+        log.Printf("user %d not online\n")
+        return
+    }
+
+    client.writePacket(&packet)
 }
 
 // TODO: implement

@@ -23,8 +23,7 @@ type MessageModel struct {
 }
 
 func (mm *MessageModel) InsertOneToOneMessage(msg *OneToOneMessage) error {
-	sqlStmt := `insert into public.oneToOneMessages(messageId, senderId, recipientId, content, timestamp)
-    values($1, $2, $3, $4, $5)`
+	sqlStmt := "insert into public.oneToOneMessages(messageId, senderId, recipientId, content, timestamp) values($1, $2, $3, $4, $5)"
 	_, err := mm.dbPool.Exec(context.Background(), sqlStmt, msg.MessageId, msg.SenderId,
 		msg.RecipientId, msg.Content, msg.TimeStamp)
 	if err != nil {

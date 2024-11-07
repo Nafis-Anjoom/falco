@@ -10,6 +10,7 @@ const (
 	MSG_RECEIVE_HEADER_SIZE = 32
 	MSG_SEND_HEADER_SIZE    = 24
 	MSG_SENT_SUCCESS_SIZE   = 32
+	SYNC_THREAD_SIZE        = 16
 )
 
 type Payload interface {
@@ -129,4 +130,33 @@ func (ms *MessageSentSuccess) Type() PayloadType {
 
 func (ms *MessageSentSuccess) Length() int {
 	return MSG_SENT_SUCCESS_SIZE
+}
+
+type SyncThread struct {
+	User1Id int64 `json:"user1_id"`
+	User2Id int64 `json:"user2_id"`
+}
+
+func (s *SyncThread) MarshalBinary() (data []byte, err error) {
+	buffer := make([]byte, SYNC_THREAD_SIZE)
+
+	binary.BigEndian.PutUint64(buffer[0:], uint64(s.User1Id))
+	binary.BigEndian.PutUint64(buffer[8:], uint64(s.User2Id))
+
+	return buffer, nil
+}
+
+func (s *SyncThread) UnmarshalBinary(data []byte) error {
+	s.User1Id = int64(binary.BigEndian.Uint64(data[0:]))
+	s.User2Id = int64(binary.BigEndian.Uint64(data[8:]))
+
+	return nil
+}
+
+func (s *SyncThread) Type() PayloadType {
+	return SYNC_THREAD
+}
+
+func (s *SyncThread) Length() int {
+	return SYNC_THREAD_SIZE
 }

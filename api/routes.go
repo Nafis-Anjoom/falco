@@ -20,7 +20,7 @@ func (app *application) routes() http.Handler {
     })
 
     mux.HandleFunc("GET /user/{id}", app.getUserByIdHandler) 
-    mux.HandleFunc("DELETE /user/{id}", app.deleteUserById) 
+    mux.HandleFunc("DELETE /user/{id}", app.deleteUserByIdHandler) 
     mux.HandleFunc("POST /user", app.createUserHandler) 
 
     return mux

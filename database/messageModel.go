@@ -36,9 +36,10 @@ func (mm *MessageModel) GetOneToOneMessage(msgId int64) (*OneToOneMessage, error
 	return nil, nil
 }
 
-func (mm *MessageModel) GetMessagesByChat(chatId int64) ([]OneToOneMessage, error) {
-	sqlStmt := `select id, senderId, content from public.messages where chatId = $1`
-	rows, _ := mm.dbPool.Query(context.Background(), sqlStmt, chatId)
+func (mm *MessageModel) GetOneToOneMessageThread(userId1, userId2 int64) ([]OneToOneMessage, error) {
+	// sqlStmt := `select id, senderId, content from public.messages where chatId = $1`
+    sqlStmt := "select * from public.onetoonemessages where (senderid = $1 and recipientid = $2) or (senderid = $2 and recipientid = $1);"
+	rows, _ := mm.dbPool.Query(context.Background(), sqlStmt, userId1, userId2)
 
 	messages, err := pgx.CollectRows(rows, pgx.RowToStructByName[OneToOneMessage])
 	if err != nil {

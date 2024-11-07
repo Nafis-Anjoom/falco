@@ -5,10 +5,11 @@ import (
 	"encoding/binary"
 	"time"
 )
+
 const (
-    MSG_RECEIVE_HEADER_SIZE = 32
-    MSG_SEND_HEADER_SIZE = 24
-    MSG_STATUS_SENT_SIZE = 16
+	MSG_RECEIVE_HEADER_SIZE = 32
+	MSG_SEND_HEADER_SIZE    = 24
+	MSG_STATUS_SENT_SIZE    = 16
 )
 
 type Payload interface {

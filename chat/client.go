@@ -51,15 +51,12 @@ func (client *Client) readClient(ms *MessageService, conn *websocket.Conn) {
 }
 
 func (client *Client) handleMessageSend(ms *MessageService, packet *protocol.Packet) error {
-    log.Printf("packet received: %+v\n", packet)
-
     var err error
     var message protocol.MessageSend
     err = message.UnmarshalBinary(packet.Payload)
     if err != nil {
         return err
     }
-
     ms.MessageBuff <- &message
 
     return err

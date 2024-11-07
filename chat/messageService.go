@@ -1,14 +1,15 @@
 package chat
 
 import (
+	"chat/chat/idGenerator"
 	"chat/chat/protocol"
 	"chat/database"
-	"fmt"
 	"log"
 	"time"
 )
 
 type MessageService struct {
+	IdGenerator       *idGenerator.IdGenerator
 	MessageBuff       chan *protocol.MessageSend
 	models            *database.Models
 	activeConnections map[int64]*Client
@@ -16,8 +17,9 @@ type MessageService struct {
 	deregister        chan int64
 }
 
-func NewMessageService(models *database.Models) *MessageService {
+func NewMessageService(models *database.Models, idGenerator *idGenerator.IdGenerator) *MessageService {
 	return &MessageService{
+		IdGenerator:       idGenerator,
 		MessageBuff:       make(chan *protocol.MessageSend, 512),
 		activeConnections: make(map[int64]*Client),
 		register:          make(chan *Client),
@@ -37,35 +39,36 @@ func (m *MessageService) Run() {
 			if _, found := m.activeConnections[userId]; found {
 				delete(m.activeConnections, userId)
 			}
-        // TODO: handle messageSend
-        case messageSend := <- m.MessageBuff:
-            m.handleOneToOneMessage(messageSend)
-            fmt.Printf("Message in MessageService: %+v\n", messageSend)
+		// TODO: handle messageSend
+		case messageSend := <-m.MessageBuff:
+			m.handleOneToOneMessage(messageSend)
 		}
 	}
 }
 
 func (m *MessageService) handleOneToOneMessage(message *protocol.MessageSend) error {
-    oneToOneMessage := &database.OneToOneMessage {
-        SenderId: message.SenderId,
-        ReceiverId: message.RecipientId,
-        Content: message.Content,
-        TimeStamp: time.Now().UTC(),
-    }
+	oneToOneMessage := &database.OneToOneMessage{
+		MessageId:   m.IdGenerator.Generate(),
+		SenderId:    message.SenderId,
+		RecipientId: message.RecipientId,
+		Content:     message.Content,
+		TimeStamp:   time.Now().UTC(),
+	}
 
-    err := m.models.Messages.InsertOneToOneMessage(oneToOneMessage)
-    // Message not stored. Needs to notify the user that message not sent
-    if err != nil {
-        m.failToSend(message)
-    }
-    return nil
+	err := m.models.Messages.InsertOneToOneMessage(oneToOneMessage)
+	// Message not stored. Needs to notify the user that message not sent
+	if err != nil {
+		log.Println(err)
+		m.failToSend(message)
+	}
+	return nil
 }
 
 // TODO: implement
 func (m *MessageService) handleGroupMessage(message *protocol.MessageSend) error {
-    return nil
+	return nil
 }
 
 func (m *MessageService) failToSend(message *protocol.MessageSend) {
-    log.Println("Unable to store message: %+v\n", message)
+	log.Printf("Unable to store message: %+v\n", message)
 }

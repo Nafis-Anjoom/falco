@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -10,11 +11,11 @@ import (
 )
 
 type OneToOneMessage struct {
-	Id         int64
-	SenderId   int64
-	ReceiverId int64
-	Content    string
-	TimeStamp  time.Time
+	MessageId   int64
+	SenderId    int64
+	RecipientId int64
+	Content     string
+	TimeStamp   time.Time
 }
 
 type MessageModel struct {
@@ -22,11 +23,12 @@ type MessageModel struct {
 }
 
 func (mm *MessageModel) InsertOneToOneMessage(msg *OneToOneMessage) error {
-	sqlStmt := `insert into public.oneToOneMessages(senderId, receiverId, content, timestamp) values($1, $2, $3, $4)`
-	_, err := mm.dbPool.Exec(context.Background(), sqlStmt, msg.SenderId, msg.ReceiverId, msg.Content, msg.TimeStamp)
+	sqlStmt := `insert into public.oneToOneMessages(messageId, senderId, recipientId, content, timestamp)
+    values($1, $2, $3, $4, $5)`
+	_, err := mm.dbPool.Exec(context.Background(), sqlStmt, msg.MessageId, msg.SenderId,
+		msg.RecipientId, msg.Content, msg.TimeStamp)
 	if err != nil {
-		log.Println("error inserting message:", err)
-		return err
+		return fmt.Errorf("%w: %w", InsertionError, err)
 	}
 	return nil
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"chat/chat"
+	"chat/chat/idGenerator"
 	"chat/database"
 	"context"
 	"fmt"
@@ -59,7 +60,11 @@ func main() {
     // there should be a better way to initialize models and messageService
     // models should not be a top level field in application. Then all services should have a models field
     models := database.NewModels(dbPool)
-    messageService := chat.NewMessageService(models)
+    idGenerator, err := idGenerator.NewIdGenerator(0)
+    if err != nil {
+        log.Fatalln(err)
+    }
+    messageService := chat.NewMessageService(models, idGenerator)
 
     app := &application{
         config: config,

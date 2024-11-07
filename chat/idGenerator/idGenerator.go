@@ -26,7 +26,7 @@ var (
 )
 
 type IdGenerator struct {
-	mutex         *sync.Mutex
+	mutex         sync.Mutex
 	lastTimestamp int64
 	machineId     int64
 	sequence      int64

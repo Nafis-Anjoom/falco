@@ -5,20 +5,22 @@ import (
 	"net/http"
 	"strconv"
 
+	"chat/chat/protocol"
 	"chat/utils"
 
 	"github.com/gorilla/websocket"
 )
 
 type Client struct {
-	userId uint32
-	conn   *websocket.Conn
-	buff   chan *MessageRequest
+	userId        int64
+	conn          *websocket.Conn
+	receiveBuffer chan *protocol.MessageReceieve
 }
 
 func (c *Client) readClient(ms *MessageService, conn *websocket.Conn) {
 	for {
-		var msg MessageRequest
+		var msg protocol.MessageReceieve
+		// TODO: parse packet instead of json
 		err := conn.ReadJSON(&msg)
 		if err != nil {
 			log.Println("error occured during read from client:", err)
@@ -30,7 +32,7 @@ func (c *Client) readClient(ms *MessageService, conn *websocket.Conn) {
 
 func (c *Client) writeClient(conn *websocket.Conn) {
 	for {
-		message := <-c.buff
+		message := <-c.receiveBuffer
 
 		err := conn.WriteJSON(*message)
 		if err != nil {
@@ -46,14 +48,12 @@ func ServeWs(ms *MessageService, w http.ResponseWriter, r *http.Request) {
 		log.Println("missing userId")
 		return
 	}
-    userId, err := strconv.ParseUint(qp.Get("userId"), 10, 32)
+	userId, err := strconv.ParseInt(qp.Get("userId"), 10, 32)
 	if err != nil {
-        log.Println("error parsing userId: ", err.Error())
+		log.Println("error parsing userId: ", err.Error())
 	}
 
-
 	log.Println("attempting to set up socket. Source: ", r.RemoteAddr)
-
 	conn, err := utils.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("error during upgrade:", err)
@@ -61,17 +61,12 @@ func ServeWs(ms *MessageService, w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := &Client{
-		userId: uint32(userId),
-		conn:   conn,
-		buff:   make(chan *MessageRequest, 256),
+		userId:        userId,
+		conn:          conn,
+		receiveBuffer: make(chan *protocol.MessageReceieve, 256),
 	}
 
-	userConn := &userConnection{
-		userId: uint32(userId),
-		conn:   client,
-	}
-
-	ms.register <-userConn
+	ms.register <- client
 
 	go client.readClient(ms, conn)
 	go client.writeClient(conn)

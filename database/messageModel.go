@@ -3,45 +3,47 @@ package database
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Message struct {
-	Id       int64
-	ChatId   int64
-	SenderId int32
-	Content  string
+type OneToOneMessage struct {
+	Id         int64
+	SenderId   int64
+	ReceiverId int64
+	Content    string
+	TimeStamp  time.Time
 }
 
 type MessageModel struct {
 	dbPool *pgxpool.Pool
 }
 
-func (mm *MessageModel) InsertMessage(msg *Message) error {
-    sqlStmt := `insert into public.messages(chatId, senderId, content) values($1, $2, $3)`
-    _, err := mm.dbPool.Exec(context.Background(), sqlStmt, msg.ChatId, msg.SenderId, msg.Content)
-    if err != nil {
-        log.Println("error inserting message:", err)
-        return err
-    }
-    return nil
+func (mm *MessageModel) InsertOneToOneMessage(msg *OneToOneMessage) error {
+	sqlStmt := `insert into public.oneToOneMessages(senderId, receiverId, content, timestamp) values($1, $2, $3, $4)`
+	_, err := mm.dbPool.Exec(context.Background(), sqlStmt, msg.SenderId, msg.ReceiverId, msg.Content, msg.TimeStamp)
+	if err != nil {
+		log.Println("error inserting message:", err)
+		return err
+	}
+	return nil
 }
 
-func (mm *MessageModel) GetMessage(chatId uint64, msgId uint64) (*Message, error) {
+func (mm *MessageModel) GetOneToOneMessage(msgId int64) (*OneToOneMessage, error) {
 	return nil, nil
 }
 
-func (mm *MessageModel) GetMessagesByChat(chatId uint64) ([]Message, error) {
-    sqlStmt := `select id, senderId, content from public.messages where chatId = $1`
-    rows, _ := mm.dbPool.Query(context.Background(), sqlStmt, chatId)
+func (mm *MessageModel) GetMessagesByChat(chatId int64) ([]OneToOneMessage, error) {
+	sqlStmt := `select id, senderId, content from public.messages where chatId = $1`
+	rows, _ := mm.dbPool.Query(context.Background(), sqlStmt, chatId)
 
-    messages, err := pgx.CollectRows(rows, pgx.RowToStructByName[Message])
-    if err != nil {
-        log.Println("error retrieving chat messages:", err)
-        return nil, err
-    }
-    
-    return messages, nil
+	messages, err := pgx.CollectRows(rows, pgx.RowToStructByName[OneToOneMessage])
+	if err != nil {
+		log.Println("error retrieving chat messages:", err)
+		return nil, err
+	}
+
+	return messages, nil
 }

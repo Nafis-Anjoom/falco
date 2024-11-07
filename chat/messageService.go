@@ -1,35 +1,32 @@
 package chat
 
 import (
+	"chat/chat/protocol"
 	"chat/database"
+	"fmt"
 	"log"
+	"time"
 )
 
-type MessageRequest struct {
-	SenderId  uint32 `json:"sender_id"`
-	ChatId    uint64 `json:"chat_id"`
-	Content   string `json:"content"`
-}
-
 type userConnection struct {
-	userId uint32
-	conn   *Client
+	userId int64
+	client   *Client
 }
 
 type MessageService struct {
-	MessageBuff       chan *MessageRequest
+	MessageBuff       chan *protocol.MessageReceieve
 	models            *database.Models
-	activeConnections map[uint32]*Client
-	register          chan *userConnection
-	deregister        chan *userConnection
+	activeConnections map[int64]*Client
+	register          chan *Client
+	deregister        chan int64
 }
 
 func NewMessageService(models *database.Models) *MessageService {
 	return &MessageService{
-		MessageBuff:       make(chan *MessageRequest, 512),
-		activeConnections: make(map[uint32]*Client),
-		register:          make(chan *userConnection),
-		deregister:        make(chan *userConnection),
+		MessageBuff:       make(chan *protocol.MessageReceieve, 512),
+		activeConnections: make(map[int64]*Client),
+		register:          make(chan *Client),
+		deregister:        make(chan int64),
 		models:            models,
 	}
 }
@@ -39,39 +36,35 @@ func (m *MessageService) Run() {
 	for {
 		select {
 		case user := <-m.register:
-			m.activeConnections[user.userId] = user.conn
+			m.activeConnections[user.userId] = user
 			log.Println("user registered", user.userId)
-		case user := <-m.deregister:
-			if _, found := m.activeConnections[user.userId]; found {
-				delete(m.activeConnections, user.userId)
+		case userId := <-m.deregister:
+			if _, found := m.activeConnections[userId]; found {
+				delete(m.activeConnections, userId)
 			}
-		case msgIn := <-m.MessageBuff:
-            // converting to signed int because the db is using signed integers
-            // have to convert to unsigned during reception
-			msg := &database.Message{
-				ChatId:   int64(msgIn.ChatId),
-				SenderId: int32(msgIn.SenderId),
-				Content:  msgIn.Content,
-			}
-			log.Printf("message received: %+v\n", *msg)
-			err := m.models.Messages.InsertMessage(msg)
-			if err != nil {
-				m.reportNotSent(msgIn, err)
-			}
+        // TODO: handle messageReceive
+        case messageReceive := <- m.MessageBuff:
+            fmt.Printf("Message received: %+v\n", messageReceive)
 		}
 	}
 }
 
-func (m *MessageService) reportNotSent(msg *MessageRequest, err error) {
-	client, found := m.activeConnections[msg.SenderId]
-	if found {
-		// TODO: implement a struct for sending message status : sent, not sent, read by
-		errorMsg := &MessageRequest{
-			SenderId: msg.SenderId,
-			ChatId:   msg.ChatId,
-			Content:  err.Error(),
-		}
+func (m *MessageService) handleOneToOneMessage(message *protocol.MessageReceieve) error {
+    oneToOneMessage := &database.OneToOneMessage {
+        SenderId: message.SenderId,
+        ReceiverId: message.RecipientId,
+        Content: message.Content,
+        TimeStamp: time.Now().UTC(),
+    }
 
-		client.buff <- errorMsg
-	}
+    err := m.models.Messages.InsertOneToOneMessage(oneToOneMessage)
+    if err != nil {
+        log.Println(err)
+    }
+    return nil
+}
+
+// TODO: implement
+func (m *MessageService) handleGroupMessage(message *protocol.MessageReceieve) error {
+    return nil
 }

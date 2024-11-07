@@ -43,7 +43,7 @@ func testMessageReceivePayload(b1 []byte, b2 []byte, t *testing.T) {
 	}
 }
 
-func testMessageStatusSentPayload(b1 []byte, b2 []byte, t *testing.T) {
+func testMessageSentSuccessPayload(b1 []byte, b2 []byte, t *testing.T) {
 	if len(b1) != len(b2) {
 		t.Fatalf("Expected size 37. Got %d", len(b1))
 	}

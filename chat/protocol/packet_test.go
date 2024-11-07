@@ -46,23 +46,27 @@ func TestNewPacketMessageReceive(t *testing.T) {
 	testMessageReceivePayload(result.Payload, expected.Payload, t)
 }
 
-func TestNewPacketMessageStatusSent(t *testing.T) {
-	input := &MessageStatusSent{
+func TestNewPacketMessageSentSuccess(t *testing.T) {
+	input := &MessageSentSuccess{
 		MessageId: 1234,
+        RecipientId: 4321,
 		Timestamp: time.Unix(12345678, 0),
+        SentAt: time.Unix(12345678, 0),
 	}
 
-	result := NewPacket(MSG_STATUS_SENT, input)
+	result := NewPacket(MSG_SENT_SUCCESS, input)
 
 	expectedPayload := []byte{
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0xd2,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0xe1,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0xBC, 0x61, 0x4E,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0xBC, 0x61, 0x4E,
 	}
 
 	expected := Packet{
 		Version:       1,
-		PayloadType:   MSG_STATUS_SENT,
-		PayloadLength: 16,
+		PayloadType:   MSG_SENT_SUCCESS,
+		PayloadLength: MSG_SENT_SUCCESS_SIZE,
 		Payload:       expectedPayload,
 	}
 
@@ -78,9 +82,5 @@ func TestNewPacketMessageStatusSent(t *testing.T) {
 		t.Errorf("Expected payload length: %d. Got: %d", expected.PayloadLength, result.PayloadLength)
 	}
 
-	testMessageStatusSentPayload(result.Payload, expected.Payload, t)
+	testMessageSentSuccessPayload(result.Payload, expected.Payload, t)
 }
-
-// 8 milk
-// 7-8 corriander
-// 15 Cucumber

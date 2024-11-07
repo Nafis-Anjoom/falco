@@ -9,7 +9,7 @@ import (
 const (
 	MSG_RECEIVE_HEADER_SIZE = 32
 	MSG_SEND_HEADER_SIZE    = 24
-	MSG_STATUS_SENT_SIZE    = 16
+	MSG_SENT_SUCCESS_SIZE   = 32
 )
 
 type Payload interface {
@@ -94,32 +94,39 @@ func (ms *MessageSend) Length() int {
 	return MSG_SEND_HEADER_SIZE + len(ms.Content)
 }
 
-type MessageStatusSent struct {
-	MessageId int64     `json:"message_id"`
-	Timestamp time.Time `json:"timestamp"`
+type MessageSentSuccess struct {
+	MessageId   int64     `json:"message_id"`
+	RecipientId int64     `json:"recipient_id"`
+	Timestamp   time.Time `json:"timestamp"`
+	SentAt      time.Time `json:"sent_at"`
 }
 
-func (ms *MessageStatusSent) MarshalBinary() (data []byte, err error) {
-	buffer := make([]byte, MSG_STATUS_SENT_SIZE)
+func (ms *MessageSentSuccess) MarshalBinary() (data []byte, err error) {
+	buffer := make([]byte, MSG_SENT_SUCCESS_SIZE)
 
 	binary.BigEndian.PutUint64(buffer[0:], uint64(ms.MessageId))
-	binary.BigEndian.PutUint64(buffer[8:], uint64(ms.Timestamp.Unix()))
+	binary.BigEndian.PutUint64(buffer[8:], uint64(ms.RecipientId))
+	binary.BigEndian.PutUint64(buffer[16:], uint64(ms.Timestamp.Unix()))
+	binary.BigEndian.PutUint64(buffer[24:], uint64(ms.SentAt.Unix()))
 
 	return buffer, nil
 }
 
-func (ms *MessageStatusSent) UnmarshalBinary(data []byte) error {
+func (ms *MessageSentSuccess) UnmarshalBinary(data []byte) error {
 	ms.MessageId = int64(binary.BigEndian.Uint64(data[0:]))
-	timestamp := int64(binary.BigEndian.Uint64(data[8:]))
+	ms.RecipientId = int64(binary.BigEndian.Uint64(data[8:]))
+	timestamp := int64(binary.BigEndian.Uint64(data[16:]))
 	ms.Timestamp = time.Unix(timestamp, 0)
+	sentAt := int64(binary.BigEndian.Uint64(data[24:]))
+	ms.SentAt = time.Unix(sentAt, 0)
 
 	return nil
 }
 
-func (ms *MessageStatusSent) Type() PayloadType {
-	return MSG_STATUS_SENT
+func (ms *MessageSentSuccess) Type() PayloadType {
+	return MSG_SENT_SUCCESS
 }
 
-func (ms *MessageStatusSent) Length() int {
-	return MSG_STATUS_SENT_SIZE
+func (ms *MessageSentSuccess) Length() int {
+	return MSG_SENT_SUCCESS_SIZE
 }

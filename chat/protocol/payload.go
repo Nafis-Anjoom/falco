@@ -68,9 +68,9 @@ type MessageSend struct {
 func (ms *MessageSend) MarshalBinary() (data []byte, err error) {
 	buffer := make([]byte, MSG_SEND_HEADER_SIZE+len(ms.Content))
 
-	binary.BigEndian.PutUint16(buffer[0:], uint16(ms.SenderId))
-	binary.BigEndian.PutUint16(buffer[8:], uint16(ms.RecipientId))
-	binary.BigEndian.PutUint16(buffer[16:], uint16(ms.SentAt.Unix()))
+	binary.BigEndian.PutUint64(buffer[0:], uint64(ms.SenderId))
+	binary.BigEndian.PutUint64(buffer[8:], uint64(ms.RecipientId))
+	binary.BigEndian.PutUint64(buffer[16:], uint64(ms.SentAt.Unix()))
 	copy(buffer[MSG_SEND_HEADER_SIZE:], ms.Content)
 
 	return buffer, nil

@@ -14,19 +14,18 @@ import (
 type Client struct {
 	userId        int64
 	conn          *websocket.Conn
-	receiveBuffer chan *protocol.MessageReceieve
 }
 
-func (client *Client) readClient(ms *MessageService, conn *websocket.Conn) {
+func (client *Client) readClient(ms *MessageService) {
 	for {
-        _, buff, err := conn.ReadMessage()
+        _, buff, err := client.conn.ReadMessage()
         if err != nil {
             // TODO: handle error "websocket: bad close code 2545"
             switch {
             case websocket.IsCloseError(err, websocket.CloseMessage):
-                log.Println("Closing connection with client: ", conn.RemoteAddr().String())
+                log.Println("Closing connection with client: ", client.conn.RemoteAddr().String())
             case websocket.IsCloseError(err, websocket.CloseAbnormalClosure):
-                log.Println("Abnormal closure. Closing connection with client: ", conn.RemoteAddr().String())
+                log.Println("Abnormal closure. Closing connection with client: ", client.conn.RemoteAddr().String())
             default: 
                 log.Println("unknown error: ", err)
             }
@@ -45,8 +44,6 @@ func (client *Client) readClient(ms *MessageService, conn *websocket.Conn) {
         if err != nil {
             log.Println(err)
         }
-
-		// ms.MessageBuff <- &msg
 	}
 }
 
@@ -62,15 +59,11 @@ func (client *Client) handleMessageSend(ms *MessageService, packet *protocol.Pac
     return err
 }
 
-func (client *Client) writeClient(conn *websocket.Conn) {
-	for {
-		message := <-client.receiveBuffer
-
-		err := conn.WriteJSON(*message)
-		if err != nil {
-			log.Println("error occured during write from client:", conn.RemoteAddr())
-		}
-	}
+func (client *Client) writePacket(packet *protocol.Packet) {
+    err := client.conn.WriteMessage(websocket.BinaryMessage, packet.ToBytes())
+    if err != nil {
+        log.Println(err)
+    }
 }
 
 func ServeWs(ms *MessageService, w http.ResponseWriter, r *http.Request) {
@@ -95,11 +88,9 @@ func ServeWs(ms *MessageService, w http.ResponseWriter, r *http.Request) {
 	client := &Client{
 		userId:        userId,
 		conn:          conn,
-		receiveBuffer: make(chan *protocol.MessageReceieve, 256),
 	}
 
 	ms.register <- client
 
-	go client.readClient(ms, conn)
-	go client.writeClient(conn)
+	go client.readClient(ms)
 }

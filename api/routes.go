@@ -19,9 +19,9 @@ func (app *application) routes() http.Handler {
         chat.ServeWs(app.messageService, w, r)
     })
 
-    mux.HandleFunc("GET /user/{id}", app.getUserByIdHandler) 
-    mux.HandleFunc("DELETE /user/{id}", app.deleteUserByIdHandler) 
-    mux.HandleFunc("POST /user", app.createUserHandler) 
+    mux.HandleFunc("GET /user/{id}", app.userService.getUserByIdHandler) 
+    mux.HandleFunc("DELETE /user/{id}", app.userService.deleteUserByIdHandler) 
+    mux.HandleFunc("POST /user", app.userService.createUserHandler) 
 
     return mux
 }

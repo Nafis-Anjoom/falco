@@ -1,3 +1,4 @@
 .envrc
 migrate.config
 .air.toml
+tmp

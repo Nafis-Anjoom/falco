@@ -17,22 +17,57 @@ type Client struct {
 	receiveBuffer chan *protocol.MessageReceieve
 }
 
-func (c *Client) readClient(ms *MessageService, conn *websocket.Conn) {
+func (client *Client) readClient(ms *MessageService, conn *websocket.Conn) {
 	for {
-		var msg protocol.MessageReceieve
-		// TODO: parse packet instead of json
-		err := conn.ReadJSON(&msg)
-		if err != nil {
-			log.Println("error occured during read from client:", err)
-			continue
-		}
-		ms.MessageBuff <- &msg
+        _, buff, err := conn.ReadMessage()
+        if err != nil {
+            // TODO: handle error "websocket: bad close code 2545"
+            switch {
+            case websocket.IsCloseError(err, websocket.CloseMessage):
+                log.Println("Closing connection with client: ", conn.RemoteAddr().String())
+            case websocket.IsCloseError(err, websocket.CloseAbnormalClosure):
+                log.Println("Abnormal closure. Closing connection with client: ", conn.RemoteAddr().String())
+            default: 
+                log.Println("unknown error: ", err)
+            }
+            break
+        }
+
+        packet := protocol.PacketFromBytes(buff)
+        switch packet.PayloadType {
+        case protocol.MSG_SEND:
+            err = client.handleMessageSend(ms, packet)
+        default:
+            log.Println("unhandled packet type: ", packet.PayloadType)
+        }
+
+        // TODO: notify client if error
+        if err != nil {
+            log.Println(err)
+        }
+
+		// ms.MessageBuff <- &msg
 	}
 }
 
-func (c *Client) writeClient(conn *websocket.Conn) {
+func (client *Client) handleMessageSend(ms *MessageService, packet *protocol.Packet) error {
+    log.Printf("packet received: %+v\n", packet)
+
+    var err error
+    var message protocol.MessageSend
+    err = message.UnmarshalBinary(packet.Payload)
+    if err != nil {
+        return err
+    }
+
+    ms.MessageBuff <- &message
+
+    return err
+}
+
+func (client *Client) writeClient(conn *websocket.Conn) {
 	for {
-		message := <-c.receiveBuffer
+		message := <-client.receiveBuffer
 
 		err := conn.WriteJSON(*message)
 		if err != nil {

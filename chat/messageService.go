@@ -8,13 +8,8 @@ import (
 	"time"
 )
 
-type userConnection struct {
-	userId int64
-	client   *Client
-}
-
 type MessageService struct {
-	MessageBuff       chan *protocol.MessageReceieve
+	MessageBuff       chan *protocol.MessageSend
 	models            *database.Models
 	activeConnections map[int64]*Client
 	register          chan *Client
@@ -23,7 +18,7 @@ type MessageService struct {
 
 func NewMessageService(models *database.Models) *MessageService {
 	return &MessageService{
-		MessageBuff:       make(chan *protocol.MessageReceieve, 512),
+		MessageBuff:       make(chan *protocol.MessageSend, 512),
 		activeConnections: make(map[int64]*Client),
 		register:          make(chan *Client),
 		deregister:        make(chan int64),
@@ -42,14 +37,15 @@ func (m *MessageService) Run() {
 			if _, found := m.activeConnections[userId]; found {
 				delete(m.activeConnections, userId)
 			}
-        // TODO: handle messageReceive
-        case messageReceive := <- m.MessageBuff:
-            fmt.Printf("Message received: %+v\n", messageReceive)
+        // TODO: handle messageSend
+        case messageSend := <- m.MessageBuff:
+            m.handleOneToOneMessage(messageSend)
+            fmt.Printf("Message in MessageService: %+v\n", messageSend)
 		}
 	}
 }
 
-func (m *MessageService) handleOneToOneMessage(message *protocol.MessageReceieve) error {
+func (m *MessageService) handleOneToOneMessage(message *protocol.MessageSend) error {
     oneToOneMessage := &database.OneToOneMessage {
         SenderId: message.SenderId,
         ReceiverId: message.RecipientId,
@@ -58,13 +54,18 @@ func (m *MessageService) handleOneToOneMessage(message *protocol.MessageReceieve
     }
 
     err := m.models.Messages.InsertOneToOneMessage(oneToOneMessage)
+    // Message not stored. Needs to notify the user that message not sent
     if err != nil {
-        log.Println(err)
+        m.failToSend(message)
     }
     return nil
 }
 
 // TODO: implement
-func (m *MessageService) handleGroupMessage(message *protocol.MessageReceieve) error {
+func (m *MessageService) handleGroupMessage(message *protocol.MessageSend) error {
     return nil
+}
+
+func (m *MessageService) failToSend(message *protocol.MessageSend) {
+    log.Println("Unable to store message: %+v\n", message)
 }

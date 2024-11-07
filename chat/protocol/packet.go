@@ -16,7 +16,7 @@ var ErrorEmptyPacket = errors.New("Packet size 0. Packet is Empty")
 type PayloadType uint8
 
 const (
-	MSG_STATUS_READ PayloadType = 1
+	MSG_STATUS_READ PayloadType = iota
 	MSG_STATUS_DELV
 	MSG_STATUS_SENT
     MSG_SEND

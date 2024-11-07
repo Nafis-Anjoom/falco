@@ -47,8 +47,8 @@ func (m *MessageService) Run() {
 }
 
 func (m *MessageService) handleOneToOneMessage(message *protocol.MessageSend) {
-    messageId := m.IdGenerator.Generate()
-    timestamp := time.Now().UTC()
+	messageId := m.IdGenerator.Generate()
+	timestamp := time.Now().UTC()
 	oneToOneMessage := &database.OneToOneMessage{
 		MessageId:   messageId,
 		SenderId:    message.SenderId,
@@ -62,30 +62,53 @@ func (m *MessageService) handleOneToOneMessage(message *protocol.MessageSend) {
 	if err != nil {
 		log.Println(err)
 		m.failToSend(message)
-        return
+		return
 	}
 
-    m.ackMessage(messageId, message.SenderId, message.RecipientId, message.SentAt, timestamp)
+	m.ackMessage(messageId, message.SenderId, message.RecipientId, message.SentAt, timestamp)
+
+	messageReceive := &protocol.MessageReceieve{
+		Id:          messageId,
+		SenderId:    message.SenderId,
+		RecipientId: message.RecipientId,
+		Content:     message.Content,
+		Timestamp:   timestamp,
+	}
+
+	m.sendToRecipient(messageReceive)
+}
+
+func (m *MessageService) sendToRecipient(message *protocol.MessageReceieve) {
+	client, found := m.activeConnections[message.RecipientId]
+	// if client not active, then enqueue in message queue
+	if !found {
+		log.Printf("user %d not online\n")
+		return
+	}
+
+    packet := protocol.NewPacket(protocol.MSG_RECEIVE, message)
+
+	client.writePacket(&packet)
 }
 
 func (m *MessageService) ackMessage(messageId int64, senderId int64, recipientId int64,
-    sentAt time.Time, timestamp time.Time) {
-    messageSentAck := &protocol.MessageSentSuccess{
-        MessageId: messageId,
-        RecipientId: recipientId,
-        Timestamp: timestamp,
-        SentAt: sentAt,
-    }
+	sentAt time.Time, timestamp time.Time) {
+	messageSentAck := &protocol.MessageSentSuccess{
+		MessageId:   messageId,
+		RecipientId: recipientId,
+		Timestamp:   timestamp,
+		SentAt:      sentAt,
+	}
 
-    packet := protocol.NewPacket(protocol.MSG_SENT_SUCCESS, messageSentAck)
-    client, found := m.activeConnections[senderId]
-    // if client not active, then enqueue in message queue
-    if !found {
-        log.Printf("user %d not online\n")
-        return
-    }
+	packet := protocol.NewPacket(protocol.MSG_SENT_SUCCESS, messageSentAck)
+	client, found := m.activeConnections[senderId]
+	// if client not active, then enqueue in message queue
+	if !found {
+		log.Printf("user %d not online\n")
+		return
+	}
 
-    client.writePacket(&packet)
+	client.writePacket(&packet)
 }
 
 // TODO: implement

@@ -1,10 +1,14 @@
 package messaging
 
 import (
+	"chat/database"
 	"chat/messaging/idGenerator"
 	"chat/messaging/protocol"
-	"chat/database"
+	"chat/utils"
+	"errors"
 	"log"
+	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -26,6 +30,38 @@ func NewMessageService(models *database.Models, idGenerator *idGenerator.IdGener
 		deregister:        make(chan int64),
 		models:            models,
 	}
+}
+
+func (m *MessageService) GetMessageThreadHandler(writer http.ResponseWriter, request *http.Request) {
+	qp := request.URL.Query()
+
+    var err error
+	if !qp.Has("userId1") {
+        err = errors.New("missing userId1")
+        utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+        return
+	}
+	if !qp.Has("userId2") {
+        err = errors.New("missing userId2")
+        utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+        return
+	}
+    
+    userId1, err := strconv.ParseInt(qp.Get("userId1"), 10, 64)
+    userId2, err := strconv.ParseInt(qp.Get("userId2"), 10, 64)
+    
+    if err != nil {
+        utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+        return
+    }
+
+    messages, err := m.models.Messages.GetOneToOneMessageThread(userId1, userId2)
+    if err != nil {
+        utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+        return
+    }
+
+    utils.WriteJSONResponse(writer, http.StatusOK, messages)
 }
 
 func (m *MessageService) Run() {

@@ -19,6 +19,8 @@ func (app *application) routes() http.Handler {
         messaging.ServeWs(app.messageService, w, r)
     })
 
+    mux.HandleFunc("GET /thread", app.messageService.GetMessageThreadHandler) 
+
     mux.HandleFunc("GET /user/{id}", app.userService.getUserByIdHandler) 
     mux.HandleFunc("DELETE /user/{id}", app.userService.deleteUserByIdHandler) 
     mux.HandleFunc("POST /user", app.userService.createUserHandler) 

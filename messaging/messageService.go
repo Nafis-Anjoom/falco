@@ -1,8 +1,8 @@
-package chat
+package messaging
 
 import (
-	"chat/chat/idGenerator"
-	"chat/chat/protocol"
+	"chat/messaging/idGenerator"
+	"chat/messaging/protocol"
 	"chat/database"
 	"log"
 	"time"

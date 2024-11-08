@@ -10,6 +10,14 @@ import (
 	"strconv"
 )
 
+type UserService struct {
+    models *database.Models
+}
+
+func NewUserService(models *database.Models) *UserService {
+    return &UserService{models: models}
+}
+
 type createUserRequest struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
@@ -23,7 +31,7 @@ type getUserResponse struct {
 	Email     string `json:"email"`
 }
 
-func (app *application) createUserHandler(writer http.ResponseWriter, request *http.Request) {
+func (us *UserService) createUserHandler(writer http.ResponseWriter, request *http.Request) {
 	var input createUserRequest
 
 	err := json.NewDecoder(request.Body).Decode(&input)
@@ -38,7 +46,7 @@ func (app *application) createUserHandler(writer http.ResponseWriter, request *h
 		Email:     input.Email,
 	}
 
-	id, err := app.models.Users.InsertUser(user)
+	id, err := us.models.Users.InsertUser(user)
 	if err != nil {
 		log.Println(err)
 		utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
@@ -55,7 +63,7 @@ func (app *application) createUserHandler(writer http.ResponseWriter, request *h
 	utils.WriteJSONResponse(writer, http.StatusCreated, output)
 }
 
-func (app *application) getUserByIdHandler(writer http.ResponseWriter, request *http.Request) {
+func (us *UserService) getUserByIdHandler(writer http.ResponseWriter, request *http.Request) {
 	param := request.PathValue("id")
 	if param == "" {
 		err := errors.New("missing id param")
@@ -70,7 +78,7 @@ func (app *application) getUserByIdHandler(writer http.ResponseWriter, request *
 		return
 	}
 
-	user, err := app.models.Users.GetUserById(userId)
+	user, err := us.models.Users.GetUserById(userId)
 	if err != nil {
 		switch {
 		case errors.Is(err, database.RecordNotFoundError):
@@ -95,7 +103,7 @@ func (app *application) getUserByIdHandler(writer http.ResponseWriter, request *
 	}
 }
 
-func (app *application) deleteUserById(writer http.ResponseWriter, request *http.Request) {
+func (us *UserService) deleteUserByIdHandler(writer http.ResponseWriter, request *http.Request) {
 	param := request.PathValue("id")
 	if param == "" {
 		err := errors.New("missing id param")
@@ -110,7 +118,7 @@ func (app *application) deleteUserById(writer http.ResponseWriter, request *http
 		return
 	}
 
-	err = app.models.Users.DeleteUserById(userId)
+	err = us.models.Users.DeleteUserById(userId)
 	if err != nil {
 		switch {
 		case errors.Is(err, database.RecordNotFoundError):

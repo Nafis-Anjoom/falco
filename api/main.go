@@ -1,8 +1,8 @@
 package main
 
 import (
-	"chat/chat"
-	"chat/chat/idGenerator"
+	"chat/messaging"
+	"chat/messaging/idGenerator"
 	"chat/database"
 	"context"
 	"fmt"
@@ -17,8 +17,8 @@ import (
 
 type application struct {
     config config
-    messageService *chat.MessageService
-    models *database.Models
+    messageService *messaging.MessageService
+    userService *UserService
 }
 
 type config struct {
@@ -57,19 +57,18 @@ func main() {
         log.Fatalln("unable to open database connection")
     }
 
-    // there should be a better way to initialize models and messageService
-    // models should not be a top level field in application. Then all services should have a models field
     models := database.NewModels(dbPool)
     idGenerator, err := idGenerator.NewIdGenerator(0)
     if err != nil {
         log.Fatalln(err)
     }
-    messageService := chat.NewMessageService(models, idGenerator)
+    messageService := messaging.NewMessageService(models, idGenerator)
+    userService := NewUserService(models)
 
     app := &application{
         config: config,
         messageService: messageService,
-        models: models,
+        userService: userService,
     }
 
     app.serve()

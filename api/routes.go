@@ -1,7 +1,7 @@
 package main
 
 import (
-	"chat/chat"
+	"chat/messaging"
 	"log"
 	"net/http"
 )
@@ -15,13 +15,13 @@ func (app *application) routes() http.Handler {
 
     mux.HandleFunc("/echo", app.echoHandler)
 
-    mux.HandleFunc("GET /chat", func(w http.ResponseWriter, r *http.Request) {
-        chat.ServeWs(app.messageService, w, r)
+    mux.HandleFunc("GET /ws", func(w http.ResponseWriter, r *http.Request) {
+        messaging.ServeWs(app.messageService, w, r)
     })
 
-    mux.HandleFunc("GET /user/{id}", app.getUserByIdHandler) 
-    mux.HandleFunc("DELETE /user/{id}", app.deleteUserByIdHandler) 
-    mux.HandleFunc("POST /user", app.createUserHandler) 
+    mux.HandleFunc("GET /user/{id}", app.userService.getUserByIdHandler) 
+    mux.HandleFunc("DELETE /user/{id}", app.userService.deleteUserByIdHandler) 
+    mux.HandleFunc("POST /user", app.userService.createUserHandler) 
 
     return mux
 }

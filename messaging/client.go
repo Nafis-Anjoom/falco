@@ -1,11 +1,11 @@
-package chat
+package messaging
 
 import (
 	"log"
 	"net/http"
 	"strconv"
 
-	"chat/chat/protocol"
+	"chat/messaging/protocol"
 	"chat/utils"
 
 	"github.com/gorilla/websocket"

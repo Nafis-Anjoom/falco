@@ -1,8 +1,8 @@
 package main
 
 import (
-	"chat/chat"
-	"chat/chat/idGenerator"
+	"chat/messaging"
+	"chat/messaging/idGenerator"
 	"chat/database"
 	"context"
 	"fmt"
@@ -17,9 +17,8 @@ import (
 
 type application struct {
     config config
-    messageService *chat.MessageService
+    messageService *messaging.MessageService
     userService *UserService
-    models *database.Models
 }
 
 type config struct {
@@ -63,14 +62,13 @@ func main() {
     if err != nil {
         log.Fatalln(err)
     }
-    messageService := chat.NewMessageService(models, idGenerator)
+    messageService := messaging.NewMessageService(models, idGenerator)
     userService := NewUserService(models)
 
     app := &application{
         config: config,
         messageService: messageService,
         userService: userService,
-        models: models,
     }
 
     app.serve()

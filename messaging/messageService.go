@@ -35,33 +35,33 @@ func NewMessageService(models *database.Models, idGenerator *idGenerator.IdGener
 func (ms *MessageService) GetMessageThreadHandler(writer http.ResponseWriter, request *http.Request) {
 	qp := request.URL.Query()
 
-    var err error
+	var err error
 	if !qp.Has("userId1") {
-        err = errors.New("missing userId1")
-        utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
-        return
+		err = errors.New("missing userId1")
+		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+		return
 	}
 	if !qp.Has("userId2") {
-        err = errors.New("missing userId2")
-        utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
-        return
+		err = errors.New("missing userId2")
+		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+		return
 	}
-    
-    userId1, err := strconv.ParseInt(qp.Get("userId1"), 10, 64)
-    userId2, err := strconv.ParseInt(qp.Get("userId2"), 10, 64)
-    
-    if err != nil {
-        utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
-        return
-    }
 
-    messages, err := ms.models.Messages.GetOneToOneMessageThread(userId1, userId2)
-    if err != nil {
-        utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
-        return
-    }
+	userId1, err := strconv.ParseInt(qp.Get("userId1"), 10, 64)
+	userId2, err := strconv.ParseInt(qp.Get("userId2"), 10, 64)
 
-    utils.WriteJSONResponse(writer, http.StatusOK, messages)
+	if err != nil {
+		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+		return
+	}
+
+	messages, err := ms.models.Messages.GetOneToOneMessageThread(userId1, userId2)
+	if err != nil {
+		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+		return
+	}
+
+	utils.WriteJSONResponse(writer, http.StatusOK, messages)
 }
 
 func (ms *MessageService) Run() {
@@ -110,18 +110,19 @@ func (ms *MessageService) handleOneToOneMessage(message *protocol.MessageSend) {
 		Timestamp:   timestamp,
 	}
 
-	ms.sendToRecipient(messageReceive)
+	ms.sendMessageToRecipient(messageReceive)
 }
 
-func (ms *MessageService) sendToRecipient(message *protocol.MessageReceieve) {
+func (ms *MessageService) sendMessageToRecipient(message *protocol.MessageReceieve) {
 	client, found := ms.activeConnections[message.RecipientId]
 	// if client not active, then enqueue in message queue
+	// TODO: implement messageQueue using redis
 	if !found {
-		log.Printf("user %d not online\n")
+		log.Printf("user %d not online\n", message.SenderId)
 		return
 	}
 
-    packet := protocol.NewPacket(protocol.MSG_RECEIVE, message)
+	packet := protocol.NewPacket(protocol.MSG_RECEIVE, message)
 
 	client.writePacket(&packet)
 }

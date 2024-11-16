@@ -54,6 +54,7 @@ func (client *Client) handleMessageSend(ms *MessageService, packet *protocol.Pac
     if err != nil {
         return err
     }
+
     ms.MessageBuff <- &message
 
     return err

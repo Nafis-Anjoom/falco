@@ -9,11 +9,12 @@ import (
 )
 
 type User struct {
-	Id        uint32 `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	IsDeleted bool   `json:"isDeleted"`
+	Id           uint32 `json:"id"`
+	FirstName    string `json:"first_name"`
+	LastName     string `json:"last_name"`
+	Email        string `json:"email"`
+	PasswordHash []byte `json:"password_hash"`
+	IsDeleted    bool   `json:"isDeleted"`
 }
 
 type UserModel struct {
@@ -21,8 +22,8 @@ type UserModel struct {
 }
 
 func (um *UserModel) InsertUser(user *User) (uint32, error) {
-	sqlStmt := `INSERT INTO public.users(firstName, lastName, email) VALUES ($1, $2, $3) RETURNING id`
-	row := um.dbPool.QueryRow(context.Background(), sqlStmt, user.FirstName, user.LastName, user.Email)
+	sqlStmt := `INSERT INTO public.users(firstName, lastName, email, passwordHash) VALUES ($1, $2, $3, $4) RETURNING id`
+	row := um.dbPool.QueryRow(context.Background(), sqlStmt, user.FirstName, user.LastName, user.Email, user.PasswordHash)
 	var id uint32
 	err := row.Scan(&id)
 	if err != nil {
@@ -32,7 +33,10 @@ func (um *UserModel) InsertUser(user *User) (uint32, error) {
 }
 
 func (um *UserModel) GetUserById(userId uint64) (*User, error) {
-	sqlStmt := `SELECT * FROM public.users WHERE id = $1`
+	sqlStmt := `
+        SELECT id, firstName, lastName, email, isDeleted
+        FROM public.users
+        WHERE id = $1`
 
 	row := um.dbPool.QueryRow(context.Background(), sqlStmt, userId)
 

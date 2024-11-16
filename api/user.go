@@ -8,20 +8,23 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
-    models *database.Models
+	models *database.Models
 }
 
 func NewUserService(models *database.Models) *UserService {
-    return &UserService{models: models}
+	return &UserService{models: models}
 }
 
 type createUserRequest struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
+	Password  string `json:"password"`
 }
 
 type getUserResponse struct {
@@ -37,7 +40,7 @@ func (us *UserService) createUserHandler(writer http.ResponseWriter, request *ht
 	err := json.NewDecoder(request.Body).Decode(&input)
 	if err != nil {
 		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
-		http.Error(writer, err.Error(), http.StatusBadRequest)
+        return
 	}
 
 	user := &database.User{
@@ -45,6 +48,14 @@ func (us *UserService) createUserHandler(writer http.ResponseWriter, request *ht
 		LastName:  input.LastName,
 		Email:     input.Email,
 	}
+
+    passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), 12)
+	if err != nil {
+		utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
+        return
+	}
+
+    user.PasswordHash = passwordHash
 
 	id, err := us.models.Users.InsertUser(user)
 	if err != nil {

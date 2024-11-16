@@ -12,59 +12,51 @@ import (
 )
 
 type Client struct {
-	userId        int64
-	conn          *websocket.Conn
+	userId int64
+	conn   *websocket.Conn
 }
 
 func (client *Client) readClient(ms *MessageService) {
 	for {
-        _, buff, err := client.conn.ReadMessage()
-        if err != nil {
-            // TODO: handle error "websocket: bad close code 2545"
-            switch {
-            case websocket.IsCloseError(err, websocket.CloseMessage):
-                log.Println("Closing connection with client: ", client.conn.RemoteAddr().String())
-            case websocket.IsCloseError(err, websocket.CloseAbnormalClosure):
-                log.Println("Abnormal closure. Closing connection with client: ", client.conn.RemoteAddr().String())
-            default: 
-                log.Println("unknown error: ", err)
-            }
-            break
-        }
+		_, buff, err := client.conn.ReadMessage()
+		if err != nil {
+			// TODO: handle error "websocket: bad close code 2545"
+			switch {
+			case websocket.IsCloseError(err, websocket.CloseMessage):
+				log.Println("Closing connection with client: ", client.conn.RemoteAddr().String())
+			case websocket.IsCloseError(err, websocket.CloseAbnormalClosure):
+				log.Println("Abnormal closure. Closing connection with client: ", client.conn.RemoteAddr().String())
+			default:
+				log.Println("unknown error: ", err)
+			}
+			break
+		}
 
-        packet := protocol.PacketFromBytes(buff)
-        switch packet.PayloadType {
-        case protocol.MSG_SEND:
-            err = client.handleMessageSend(ms, packet)
-        default:
-            log.Println("unhandled packet type: ", packet.PayloadType)
-        }
+		packet := protocol.PacketFromBytes(buff)
+		switch packet.PayloadType {
+		case protocol.MSG_SEND:
+			var message protocol.MessageSend
+			err := message.UnmarshalBinary(packet.Payload)
+			if err == nil {
+				ms.MessageBuff <- &message
+			}
 
-        // TODO: notify client if error
-        if err != nil {
-            log.Println(err)
-        }
+		default:
+			log.Println("unhandled packet type: ", packet.PayloadType)
+		}
+
+		// TODO: notify client if error
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 
-func (client *Client) handleMessageSend(ms *MessageService, packet *protocol.Packet) error {
-    var err error
-    var message protocol.MessageSend
-    err = message.UnmarshalBinary(packet.Payload)
-    if err != nil {
-        return err
-    }
-
-    ms.MessageBuff <- &message
-
-    return err
-}
-
 func (client *Client) writePacket(packet *protocol.Packet) {
-    err := client.conn.WriteMessage(websocket.BinaryMessage, packet.ToBytes())
-    if err != nil {
-        log.Println(err)
-    }
+	err := client.conn.WriteMessage(websocket.BinaryMessage, packet.ToBytes())
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func ServeWs(ms *MessageService, w http.ResponseWriter, r *http.Request) {
@@ -87,8 +79,8 @@ func ServeWs(ms *MessageService, w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := &Client{
-		userId:        userId,
-		conn:          conn,
+		userId: userId,
+		conn:   conn,
 	}
 
 	ms.register <- client

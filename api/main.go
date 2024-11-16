@@ -1,9 +1,10 @@
 package main
 
 import (
+	"chat/auth"
+	"chat/database"
 	"chat/messaging"
 	"chat/messaging/idGenerator"
-	"chat/database"
 	"context"
 	"fmt"
 	"log"
@@ -19,6 +20,7 @@ type application struct {
     config config
     messageService *messaging.MessageService
     userService *UserService
+    authService *auth.AuthService
 }
 
 type config struct {
@@ -45,23 +47,32 @@ func (app *application) serve() {
 func main() {
     var config config
 
-    config.databaseURL = os.Getenv("DB_URL")
     port, err := strconv.ParseInt(os.Getenv("PORT"), 10, 64)
     if err != nil {
         log.Fatalln("invalid port")
     }
     config.port = int(port)
 
+    config.databaseURL = os.Getenv("DB_URL")
     dbPool, err := pgxpool.New(context.Background(), config.databaseURL)
     if err != nil {
         log.Fatalln("unable to open database connection")
     }
-
     models := database.NewModels(dbPool)
-    idGenerator, err := idGenerator.NewIdGenerator(0)
+
+
+    machineId, err := strconv.ParseInt(os.Getenv("MACHINE_ID"), 10, 64)
+    if err != nil {
+        log.Fatalln("machine Id must be an integer between 0 and 2^11")
+    }
+    idGenerator, err := idGenerator.NewIdGenerator(machineId)
     if err != nil {
         log.Fatalln(err)
     }
+
+    jwtSecret := os.Getenv("JWT_SECRET")
+    authService := auth.NewAuthService(jwtSecret, "24h", "15m")
+
     messageService := messaging.NewMessageService(models, idGenerator)
     userService := NewUserService(models)
 
@@ -69,6 +80,7 @@ func main() {
         config: config,
         messageService: messageService,
         userService: userService,
+        authService: authService,
     }
 
     app.serve()

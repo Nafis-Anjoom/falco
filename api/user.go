@@ -5,7 +5,6 @@ import (
 	"chat/utils"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -27,6 +26,10 @@ type createUserRequest struct {
 	Password  string `json:"password"`
 }
 
+type createUserResponse struct {
+	Id int64 `json:"id"`
+}
+
 type getUserResponse struct {
 	Id        uint32 `josn:"id"`
 	FirstName string `json:"first_name"`
@@ -40,7 +43,7 @@ func (us *UserService) createUserHandler(writer http.ResponseWriter, request *ht
 	err := json.NewDecoder(request.Body).Decode(&input)
 	if err != nil {
 		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
-        return
+		return
 	}
 
 	user := &database.User{
@@ -49,26 +52,26 @@ func (us *UserService) createUserHandler(writer http.ResponseWriter, request *ht
 		Email:     input.Email,
 	}
 
-    passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), 12)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), 12)
 	if err != nil {
-		utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
-        return
-	}
-
-    user.PasswordHash = passwordHash
-
-	id, err := us.models.Users.InsertUser(user)
-	if err != nil {
-		log.Println(err)
 		utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
 		return
 	}
 
-	output := getUserResponse{
+	user.PasswordHash = passwordHash
+
+	id, err := us.models.Users.InsertUser(user)
+	if err != nil {
+        if errors.Is(err, database.DuplicateEmail) {
+            utils.WriteErrorResponse(writer, request, http.StatusUnprocessableEntity, err)
+        } else {
+            utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
+        }
+		return
+	}
+
+	output := createUserResponse{
 		Id:        id,
-		FirstName: input.FirstName,
-		LastName:  input.LastName,
-		Email:     input.Email,
 	}
 
 	utils.WriteJSONResponse(writer, http.StatusCreated, output)

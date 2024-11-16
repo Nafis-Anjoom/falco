@@ -11,6 +11,7 @@ var errorMessageMap = map[int]string{
 	http.StatusNotFound:            "the requested resource is not found",
 	http.StatusInternalServerError: "the server encountered an error and could not process your request",
 	http.StatusBadRequest:          "invalid request",
+	http.StatusUnprocessableEntity: "invalid data",
 }
 
 type ErrorResponse struct {

@@ -8,6 +8,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+var (
+	DuplicateEmail = errors.New("User with provided email already exist")
+)
+
 type User struct {
 	Id           uint32 `json:"id"`
 	FirstName    string `json:"first_name"`
@@ -21,13 +25,21 @@ type UserModel struct {
 	dbPool *pgxpool.Pool
 }
 
-func (um *UserModel) InsertUser(user *User) (uint32, error) {
-	sqlStmt := `INSERT INTO public.users(firstName, lastName, email, passwordHash) VALUES ($1, $2, $3, $4) RETURNING id`
+func (um *UserModel) InsertUser(user *User) (int64, error) {
+	sqlStmt := `
+        INSERT INTO public.users(firstName, lastName, email, passwordHash)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id`
+
 	row := um.dbPool.QueryRow(context.Background(), sqlStmt, user.FirstName, user.LastName, user.Email, user.PasswordHash)
-	var id uint32
+	var id int64
 	err := row.Scan(&id)
 	if err != nil {
-		return 0, err
+        if err.Error() == `ERROR: duplicate key value violates unique constraint "users_email_key" (SQLSTATE 23505)` {
+            return -1, DuplicateEmail
+        } else {
+            return -1, err
+        }
 	}
 	return id, nil
 }

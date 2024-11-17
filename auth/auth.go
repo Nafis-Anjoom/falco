@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -29,29 +30,31 @@ func (as *AuthService) HashPassword(password string) ([]byte, error) {
 func (as *AuthService) NewToken(userId int) (string, error) {
 	claims := jwt.RegisteredClaims{
 		Issuer:    "falco",
-		Subject:   string(userId),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(as.refreshTokenExpiry)),
+		Subject:   strconv.Itoa(userId),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 		NotBefore: jwt.NewNumericDate(time.Now()),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
+    fmt.Println(as.jwtSecret)
 	return token.SignedString(as.jwtSecret)
 }
 
-func (as *AuthService) VerifyToken(tokenString string) (*jwt.RegisteredClaims, error) {
-    claims := &jwt.RegisteredClaims{}
+func (as *AuthService) VerifyToken(tokenString string) (int, error) {
+	claims := &jwt.RegisteredClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return false, fmt.Errorf("Unexpected signing method: %v", t.Header["alg"])
 		}
 
-        return as.jwtSecret, nil
+		return as.jwtSecret, nil
 	})
 
-    if err != nil || !token.Valid {
-        return nil, err
-    }
+	if err != nil || !token.Valid {
+		return -1, err
+	}
 
-    return claims, nil
+    userId, _ := strconv.ParseInt(claims.Subject, 10, 64)
+	return int(userId), nil
 }

@@ -74,7 +74,7 @@ func main() {
     authService := auth.NewAuthService(jwtSecret)
 
     messageService := messaging.NewMessageService(models, idGenerator)
-    userService := NewUserService(models)
+    userService := NewUserService(models, authService)
 
     app := &application{
         config: config,

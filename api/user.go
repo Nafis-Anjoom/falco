@@ -15,8 +15,8 @@ type UserService struct {
 	authService *auth.AuthService
 }
 
-func NewUserService(models *database.Models) *UserService {
-	return &UserService{models: models}
+func NewUserService(models *database.Models, as *auth.AuthService) *UserService {
+	return &UserService{models: models, authService: as}
 }
 
 type createUserRequest struct {
@@ -27,7 +27,8 @@ type createUserRequest struct {
 }
 
 type createUserResponse struct {
-	Id int64 `json:"id"`
+	Id    int64  `json:"id"`
+	Token string `json:"token"`
 }
 
 type getUserResponse struct {
@@ -70,8 +71,15 @@ func (us *UserService) createUserHandler(writer http.ResponseWriter, request *ht
 		return
 	}
 
+    tokenString, err := us.authService.NewToken(int(id))
+    if err != nil {
+        utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
+        return
+    }
+
 	output := createUserResponse{
 		Id: id,
+        Token: tokenString,
 	}
 
 	utils.WriteJSONResponse(writer, http.StatusCreated, output)

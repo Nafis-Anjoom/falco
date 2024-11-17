@@ -36,8 +36,8 @@ func (app *application) authenticateDummy(next http.Handler) http.Handler {
             return
         }
 
-        ctx := context.WithValue(request.Context(), "userId", userId)
-        next.ServeHTTP(writer, request.WithContext(ctx))
+        req := utils.SetUserInRequest(request, userId)
+        next.ServeHTTP(writer, req)
     })
 }
 

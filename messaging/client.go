@@ -3,7 +3,6 @@ package messaging
 import (
 	"log"
 	"net/http"
-	"strconv"
 
 	"chat/messaging/protocol"
 	"chat/utils"
@@ -59,20 +58,11 @@ func (client *Client) writePacket(packet *protocol.Packet) {
 	}
 }
 
-func ServeWs(ms *MessageService, w http.ResponseWriter, r *http.Request) {
-	qp := r.URL.Query()
+func ServeWs(ms *MessageService, writer http.ResponseWriter, request *http.Request) {
+    userId := utils.GetUserFromRequest(request)
 
-	if !qp.Has("userId") {
-		log.Println("missing userId")
-		return
-	}
-	userId, err := strconv.ParseInt(qp.Get("userId"), 10, 32)
-	if err != nil {
-		log.Println("error parsing userId: ", err.Error())
-	}
-
-	log.Println("attempting to set up socket. Source: ", r.RemoteAddr)
-	conn, err := utils.Upgrader.Upgrade(w, r, nil)
+	log.Println("attempting to set up socket. Source: ", request.RemoteAddr)
+	conn, err := utils.Upgrader.Upgrade(writer, request, nil)
 	if err != nil {
 		log.Println("error during upgrade:", err)
 		return

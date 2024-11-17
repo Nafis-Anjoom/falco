@@ -12,6 +12,7 @@ var errorMessageMap = map[int]string{
 	http.StatusInternalServerError: "the server encountered an error and could not process your request",
 	http.StatusBadRequest:          "invalid request",
 	http.StatusUnprocessableEntity: "invalid data",
+	http.StatusUnauthorized:        "user not authorized",
 }
 
 type ErrorResponse struct {

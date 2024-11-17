@@ -32,7 +32,7 @@ type config struct {
 func (app *application) serve() {
     srv := &http.Server{
         Addr: fmt.Sprintf(":%d", app.config.port),
-        Handler: app.routes(),
+        Handler: app.authenticateDummy(app.routes()),
         IdleTimeout: time.Minute,
         ReadTimeout: time.Minute,
         WriteTimeout: time.Minute,

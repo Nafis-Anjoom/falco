@@ -1,6 +1,7 @@
 package main
 
 import (
+	"chat/auth"
 	"chat/database"
 	"chat/utils"
 	"encoding/json"
@@ -12,7 +13,8 @@ import (
 )
 
 type UserService struct {
-	models *database.Models
+	models      *database.Models
+	authService *auth.AuthService
 }
 
 func NewUserService(models *database.Models) *UserService {
@@ -52,7 +54,7 @@ func (us *UserService) createUserHandler(writer http.ResponseWriter, request *ht
 		Email:     input.Email,
 	}
 
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), 12)
+	passwordHash, err := us.authService.HashPassword(input.Password)
 	if err != nil {
 		utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
 		return
@@ -62,16 +64,16 @@ func (us *UserService) createUserHandler(writer http.ResponseWriter, request *ht
 
 	id, err := us.models.Users.InsertUser(user)
 	if err != nil {
-        if errors.Is(err, database.DuplicateEmail) {
-            utils.WriteErrorResponse(writer, request, http.StatusUnprocessableEntity, err)
-        } else {
-            utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
-        }
+		if errors.Is(err, database.DuplicateEmail) {
+			utils.WriteErrorResponse(writer, request, http.StatusUnprocessableEntity, err)
+		} else {
+			utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
+		}
 		return
 	}
 
 	output := createUserResponse{
-		Id:        id,
+		Id: id,
 	}
 
 	utils.WriteJSONResponse(writer, http.StatusCreated, output)

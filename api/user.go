@@ -8,8 +8,6 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {

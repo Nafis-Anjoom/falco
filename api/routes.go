@@ -19,6 +19,8 @@ func (app *application) routes() http.Handler {
         messaging.ServeWs(app.messageService, w, r)
     })
 
+    mux.HandleFunc("GET /ws2", app.messageService.InitializeClientHandler)
+
     mux.HandleFunc("GET /thread", app.messageService.GetMessageThreadHandler) 
 
     mux.HandleFunc("GET /user/{id}", app.userService.getUserByIdHandler) 

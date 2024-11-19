@@ -32,6 +32,25 @@ func NewMessageService(models *database.Models, idGenerator *idGenerator.IdGener
 	}
 }
 
+func (ms *MessageService) InitializeClientHandler(writer http.ResponseWriter, request *http.Request) {
+    userId := utils.GetUserFromRequest(request)
+
+	log.Println("attempting to set up socket. Source: ", request.RemoteAddr)
+	conn, err := utils.Upgrader.Upgrade(writer, request, nil)
+	if err != nil {
+		log.Println("error during upgrade:", err)
+		return
+	}
+
+	client := &Client{
+		userId: userId,
+		conn:   conn,
+	}
+
+	ms.register <- client
+    go client.readClient(ms)
+}
+
 func (ms *MessageService) GetMessageThreadHandler(writer http.ResponseWriter, request *http.Request) {
 	qp := request.URL.Query()
 

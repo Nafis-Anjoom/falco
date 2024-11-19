@@ -1,6 +1,6 @@
 import ChatCard from "./chatcard";
 
-export default function Chats() {
+export default function ChatInbox() {
     return(
         <div className="flex h-full flex-col py-4 px-4 w-96 border-r-2 border-r-blue-500">
             <div className="bg-green text-xl font-bold">Chats</div>

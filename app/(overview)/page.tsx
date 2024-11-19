@@ -1,11 +1,13 @@
 import Sidebar from "@/app/ui/sidebar";
-import Chats from "@/app/ui/chats";
+import ChatInbox from "@/app/ui/chat/chatInbox";
+import ChatPane from "../ui/chat/chatpane";
 
 export default function Home() {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <Chats />
+      <ChatInbox />
+      <ChatPane />
     </div>
   );
 }

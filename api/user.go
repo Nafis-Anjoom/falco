@@ -32,19 +32,20 @@ type createUserResponse struct {
 }
 
 type getUserResponse struct {
-	Id        uint32 `josn:"id"`
+	Id        int64  `josn:"id"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
 }
 
 type loginRequest struct {
-	Email     string `json:"email"`
-	Password  string `json:"password"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type loginResponse struct {
-    Token string `json:"token"`
+	Id    int64  `josn:"id"`
+	Token string `json:"token"`
 }
 
 func (us *UserService) LoginHandler(writer http.ResponseWriter, request *http.Request) {
@@ -55,11 +56,34 @@ func (us *UserService) LoginHandler(writer http.ResponseWriter, request *http.Re
 		return
 	}
 
-    output := loginResponse{
-        Token: "take this",
-    }
+	user, err := us.models.Users.GetUserByEmail(input.Email)
+	if err != nil {
+		if errors.Is(err, database.UserNotFoundError) {
+			utils.WriteErrorResponse(writer, request, http.StatusNotFound, err)
+		} else {
+			utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
+		}
+		return
+	}
 
-    utils.WriteJSONResponse(writer, http.StatusOK, output)
+	// if !us.authService.PasswordMatches(input.Password, user.PasswordHash) {
+	// 	err = errors.New("Password does not match")
+	// 	utils.WriteErrorResponse(writer, request, http.StatusUnauthorized, err)
+	// 	return
+	// }
+
+	tokenString, err := us.authService.NewToken(user.Id)
+	if err != nil {
+		utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
+		return
+	}
+
+	output := loginResponse{
+        Id: user.Id,
+		Token: tokenString,
+	}
+
+	utils.WriteJSONResponse(writer, http.StatusOK, output)
 }
 
 func (us *UserService) createUserHandler(writer http.ResponseWriter, request *http.Request) {
@@ -87,7 +111,7 @@ func (us *UserService) createUserHandler(writer http.ResponseWriter, request *ht
 
 	id, err := us.models.Users.InsertUser(user)
 	if err != nil {
-		if errors.Is(err, database.DuplicateEmail) {
+		if errors.Is(err, database.DuplicateEmailError) {
 			utils.WriteErrorResponse(writer, request, http.StatusUnprocessableEntity, err)
 		} else {
 			utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
@@ -95,15 +119,15 @@ func (us *UserService) createUserHandler(writer http.ResponseWriter, request *ht
 		return
 	}
 
-    tokenString, err := us.authService.NewToken(int(id))
-    if err != nil {
-        utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
-        return
-    }
+	tokenString, err := us.authService.NewToken(id)
+	if err != nil {
+		utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
+		return
+	}
 
 	output := createUserResponse{
-		Id: id,
-        Token: tokenString,
+		Id:    id,
+		Token: tokenString,
 	}
 
 	utils.WriteJSONResponse(writer, http.StatusCreated, output)
@@ -117,7 +141,7 @@ func (us *UserService) getUserByIdHandler(writer http.ResponseWriter, request *h
 		return
 	}
 
-	userId, err := strconv.ParseUint(param, 10, 64)
+	userId, err := strconv.ParseInt(param, 10, 64)
 	if err != nil {
 		err := errors.New("id parameter is not an integer")
 		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
@@ -127,7 +151,7 @@ func (us *UserService) getUserByIdHandler(writer http.ResponseWriter, request *h
 	user, err := us.models.Users.GetUserById(userId)
 	if err != nil {
 		switch {
-		case errors.Is(err, database.RecordNotFoundError):
+		case errors.Is(err, database.UserNotFoundError):
 			utils.WriteErrorResponse(writer, request, http.StatusNotFound, err)
 		default:
 			utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
@@ -157,7 +181,7 @@ func (us *UserService) deleteUserByIdHandler(writer http.ResponseWriter, request
 		return
 	}
 
-	userId, err := strconv.ParseUint(param, 10, 64)
+	userId, err := strconv.ParseInt(param, 10, 64)
 	if err != nil {
 		err := errors.New("id parameter is not an integer")
 		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
@@ -167,7 +191,7 @@ func (us *UserService) deleteUserByIdHandler(writer http.ResponseWriter, request
 	err = us.models.Users.DeleteUserById(userId)
 	if err != nil {
 		switch {
-		case errors.Is(err, database.RecordNotFoundError):
+		case errors.Is(err, database.UserNotFoundError):
 			utils.WriteErrorResponse(writer, request, http.StatusNotFound, err)
 		default:
 			utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)

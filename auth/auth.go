@@ -27,10 +27,19 @@ func (as *AuthService) HashPassword(password string) ([]byte, error) {
 	return bcrypt.GenerateFromPassword([]byte(password), 12)
 }
 
-func (as *AuthService) NewToken(userId int) (string, error) {
+func (as *AuthService) PasswordMatches(password string, hashedPassword []byte) bool {
+    err := bcrypt.CompareHashAndPassword(hashedPassword, []byte(password))
+    if err != nil {
+        return false
+    }
+
+    return true
+}
+
+func (as *AuthService) NewToken(userId int64) (string, error) {
 	claims := jwt.RegisteredClaims{
 		Issuer:    "falco",
-		Subject:   strconv.Itoa(userId),
+		Subject:   strconv.FormatInt(userId, 10),
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 		NotBefore: jwt.NewNumericDate(time.Now()),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),

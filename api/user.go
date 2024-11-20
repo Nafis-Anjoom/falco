@@ -38,6 +38,30 @@ type getUserResponse struct {
 	Email     string `json:"email"`
 }
 
+type loginRequest struct {
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+}
+
+type loginResponse struct {
+    Token string `json:"token"`
+}
+
+func (us *UserService) LoginHandler(writer http.ResponseWriter, request *http.Request) {
+	var input loginRequest
+	err := json.NewDecoder(request.Body).Decode(&input)
+	if err != nil {
+		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+		return
+	}
+
+    output := loginResponse{
+        Token: "take this",
+    }
+
+    utils.WriteJSONResponse(writer, http.StatusOK, output)
+}
+
 func (us *UserService) createUserHandler(writer http.ResponseWriter, request *http.Request) {
 	var input createUserRequest
 

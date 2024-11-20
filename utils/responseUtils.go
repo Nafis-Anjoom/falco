@@ -16,21 +16,23 @@ var errorMessageMap = map[int]string{
 }
 
 type ErrorResponse struct {
+	HTTPCode  int       `json:"http_status_code"`
 	Message   string    `json:"message"`
 	TimeStamp time.Time `json:"timestamp"`
 	Path      string    `json:"path"`
+	Method    string    `json:"method"`
 	Details   string    `json:"details"`
 }
 
 func WriteJSONResponse(writer http.ResponseWriter, status int, data any) error {
 	writer.WriteHeader(status)
+	writer.Header().Set("Content-Type", "application/json")
 	json, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
 		return err
 	}
 
 	json = append(json, '\n')
-	writer.Header().Set("Content-Type", "application/json")
 	_, err = writer.Write(json)
 	if err != nil {
 		return err
@@ -41,11 +43,14 @@ func WriteJSONResponse(writer http.ResponseWriter, status int, data any) error {
 
 func WriteErrorResponse(writer http.ResponseWriter, request *http.Request, statusCode int, err error) {
 	writer.WriteHeader(statusCode)
+	writer.Header().Set("Content-Type", "application/json")
 
 	errorResponse := ErrorResponse{
+		HTTPCode:  statusCode,
 		Message:   errorMessageMap[statusCode],
 		TimeStamp: time.Now().UTC(),
 		Path:      request.URL.RequestURI(),
+		Method:    request.Method,
 		Details:   err.Error(),
 	}
 
@@ -57,7 +62,6 @@ func WriteErrorResponse(writer http.ResponseWriter, request *http.Request, statu
 	}
 
 	json = append(json, '\n')
-	writer.Header().Set("Content-Type", "application/json")
 	_, err = writer.Write(json)
 	if err != nil {
 		log.Println(err)

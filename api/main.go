@@ -73,7 +73,7 @@ func main() {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	authService := auth.NewAuthService(jwtSecret)
 
-	messageService := messaging.NewMessageService(models, idGenerator)
+	messageService := messaging.NewMessageService(models, idGenerator, authService)
 	userService := NewUserService(models, authService)
 
 	app := &application{

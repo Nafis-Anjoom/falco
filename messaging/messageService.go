@@ -1,6 +1,7 @@
 package messaging
 
 import (
+	"chat/auth"
 	"chat/database"
 	"chat/messaging/idGenerator"
 	"chat/messaging/protocol"
@@ -19,11 +20,13 @@ type MessageService struct {
 	activeConnections map[int64]*Client
 	register          chan *Client
 	deregister        chan int64
+	authService       *auth.AuthService
 }
 
-func NewMessageService(models *database.Models, idGenerator *idGenerator.IdGenerator) *MessageService {
+func NewMessageService(models *database.Models, idGenerator *idGenerator.IdGenerator, authService *auth.AuthService) *MessageService {
 	return &MessageService{
 		IdGenerator:       idGenerator,
+		authService:       authService,
 		MessageBuff:       make(chan *protocol.MessageSend, 512),
 		activeConnections: make(map[int64]*Client),
 		register:          make(chan *Client),
@@ -33,7 +36,20 @@ func NewMessageService(models *database.Models, idGenerator *idGenerator.IdGener
 }
 
 func (ms *MessageService) InitializeClientHandler(writer http.ResponseWriter, request *http.Request) {
-    userId := utils.GetUserFromRequest(request)
+	query := request.URL.Query()
+	tokenString := query.Get("token")
+	if tokenString == "" {
+		err := errors.New("missing token")
+		utils.WriteErrorResponse(writer, request, http.StatusUnauthorized, err)
+		return
+	}
+
+    userId, err := ms.authService.VerifyToken(tokenString)
+    if err != nil {
+        log.Println(err)
+		utils.WriteErrorResponse(writer, request, http.StatusUnauthorized, err)
+        return
+    }
 
 	log.Println("attempting to set up socket. Source: ", request.RemoteAddr)
 	conn, err := utils.Upgrader.Upgrade(writer, request, nil)
@@ -48,7 +64,7 @@ func (ms *MessageService) InitializeClientHandler(writer http.ResponseWriter, re
 	}
 
 	ms.register <- client
-    go client.readClient(ms)
+	go client.readClient(ms)
 }
 
 func (ms *MessageService) GetMessageThreadHandler(writer http.ResponseWriter, request *http.Request) {

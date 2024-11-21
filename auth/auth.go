@@ -32,7 +32,6 @@ func (as *AuthService) PasswordMatches(password string, hashedPassword []byte) b
     if err != nil {
         return false
     }
-
     return true
 }
 
@@ -46,11 +45,24 @@ func (as *AuthService) NewToken(userId int64) (string, error) {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
+	return token.SignedString(as.jwtSecret)
+}
+
+func (as *AuthService) NewSockAuthToken(userId int64) (string, error) {
+	claims := jwt.RegisteredClaims{
+		Issuer:    "falco",
+		Subject:   strconv.FormatInt(userId, 10),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+		NotBefore: jwt.NewNumericDate(time.Now()),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
     fmt.Println(as.jwtSecret)
 	return token.SignedString(as.jwtSecret)
 }
 
-func (as *AuthService) VerifyToken(tokenString string) (int, error) {
+func (as *AuthService) VerifyToken(tokenString string) (int64, error) {
 	claims := &jwt.RegisteredClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -65,5 +77,5 @@ func (as *AuthService) VerifyToken(tokenString string) (int, error) {
 	}
 
     userId, _ := strconv.ParseInt(claims.Subject, 10, 64)
-	return int(userId), nil
+	return userId, nil
 }

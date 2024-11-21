@@ -16,20 +16,20 @@ var (
 	invalidAuthHeaderError = errors.New("Invalid Authorization header")
 )
 
-var allowedUnauthorizedRoutes = []string{
-    "GET /",
-    "POST /login",
-    "OPTIONS /login",
+var allowedUnauthorizedRoutes = [4]string{
+	"GET /",
+	"GET /ws2",
+	"POST /login",
+	"OPTIONS /login",
 }
 
 func isAuthNeeded(method, path string) bool {
 	url := method + " " + path
-    for _, route := range allowedUnauthorizedRoutes {
-        if route == url {
-            return false
-        }
-    }
-
+	for _, route := range allowedUnauthorizedRoutes {
+		if route == url {
+			return false
+		}
+	}
 	return true
 }
 
@@ -60,7 +60,7 @@ func (app *application) authenticateDummy(next http.Handler) http.Handler {
 			return
 		}
 
-		req := utils.SetUserInRequest(request, userId)
+		req := utils.ContextSetUser(request, userId)
 		next.ServeHTTP(writer, req)
 	})
 }
@@ -103,6 +103,6 @@ func (app *application) LogRequest(next http.Handler) http.Handler {
 func (app *application) EnableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Access-Control-Allow-Origin", "*")
-        next.ServeHTTP(writer, request)
+		next.ServeHTTP(writer, request)
 	})
 }

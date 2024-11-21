@@ -8,7 +8,7 @@ import (
 type contextKey string
 const userContextKey contextKey = "user"
 
-func GetUserFromRequest(request *http.Request) int64 {
+func ContextGetUser(request *http.Request) int64 {
     userId, ok := request.Context().Value(userContextKey).(int64)
     // should never happen in prod
     if !ok {
@@ -18,7 +18,7 @@ func GetUserFromRequest(request *http.Request) int64 {
     return userId
 }
 
-func SetUserInRequest(request *http.Request, userId int64) *http.Request {
+func ContextSetUser(request *http.Request, userId int64) *http.Request {
     context := context.WithValue(request.Context(), userContextKey, userId)
     return request.WithContext(context)
 }

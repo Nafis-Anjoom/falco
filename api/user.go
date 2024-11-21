@@ -119,7 +119,7 @@ func (us *UserService) createUserHandler(writer http.ResponseWriter, request *ht
 		return
 	}
 
-	tokenString, err := us.authService.NewToken(id)
+	tokenString, err := us.authService.NewSockAuthToken(id)
 	if err != nil {
 		utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
 		return

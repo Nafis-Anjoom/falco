@@ -59,7 +59,7 @@ func (client *Client) writePacket(packet *protocol.Packet) {
 }
 
 func ServeWs(ms *MessageService, writer http.ResponseWriter, request *http.Request) {
-    userId := utils.GetUserFromRequest(request)
+    userId := utils.ContextGetUser(request)
 
 	log.Println("attempting to set up socket. Source: ", request.RemoteAddr)
 	conn, err := utils.Upgrader.Upgrade(writer, request, nil)

@@ -1,77 +1,77 @@
+"use client";
+
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import Message from "./message";
+import React, { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { MessageSend, Packet, PayloadType, encodeMessageSend, encodePacket } from "@/app/lib/protocol";
+
+const socketURL = "ws://localhost:3000/ws2";
 
 export default function ChatPane() {
+  const router = useRouter();
+  const websocket = useRef<WebSocket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("socketToken");
+    if (!token || token == null) {
+      router.push("/login");
+    }
+
+    websocket.current = new WebSocket(`${socketURL}?token=${token}`);
+    websocket.current.onopen = () => {
+      console.log("connected to message server");
+      setIsConnected(true);
+    };
+
+    websocket.current.onclose = () => {
+      setIsConnected(false);
+      console.log('Disconnected from WebSocket');
+    };
+  }, []);
+
+  function handleNewMessage() {
+    const message: MessageSend = {
+      senderId: BigInt(5),
+      recipientId: BigInt(1),
+      sentAt: new Date(),
+      content: "message from js"
+    }
+    const encodedMessage = encodeMessageSend(message);
+    const packet: Packet = {
+      version: 1,
+      payloadType: PayloadType.MessageSend,
+      payloadLength: encodedMessage.length,
+      payload: encodedMessage
+    }
+    const encodedPacket = encodePacket(packet);
+    console.log(encodedPacket);
+    
+    websocket.current?.send(encodedPacket.buffer);
+  }
+
   return (
     <div className="flex overflow-hidden flex-col w-full h-screen">
-      {/* Top bar */}
       <div className="flex flex-shrink-0 flex-grow-0 border-b-2 border-blue-500 w-full max-h-14 p-2">
         <div className="flex rounded-full w-10 h-10 bg-white flex-shrink-0"></div>
         <div className="ml-4 font-bold text-lg">John Doe</div>
       </div>
-      {/* Top bar */}
-
-      {/* thread */}
       <div className="flex flex-grow flex-col w-full overflow-y-scroll px-7">
-        {/* message */}
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
         <Message isOutgoing={false}/>
         <Message isOutgoing={true}/>
       </div>
-      {/* thread */}
-
-      {/* text area */}
       <div className="flex flex-shrink-0 flex-grow-0 w-full border-t-2 border-blue-500 min-h-20">
         <div className="flex-grow border-r-2 border-blue-500">
             <textarea className="min-h-full w-full p-2 bg-inherit text-white outline-none resize-none" placeholder="Type a message...">
             </textarea>
         </div>
-        <div className="flex items-center px-2 py-2 bg-black flex-shrink-0 hover:bg-slate-900 hover:cursor-pointer">
-            <PaperAirplaneIcon className="w-6 h-6"/>
-        </div>
+        <button onClick={handleNewMessage}>
+          <div className="flex items-center px-2 py-2 bg-black flex-shrink-0 hover:bg-slate-900 hover:cursor-pointer">
+              <PaperAirplaneIcon className="w-6 h-6"/>
+          </div>
+        </button>
       </div>
-      {/* text area */}
     </div>
   );
 }

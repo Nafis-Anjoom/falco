@@ -2,19 +2,22 @@ import clsx from "clsx";
 
 interface MessageProps {
     isOutgoing: boolean;
+    content: String;
 }
 
-export default function Message({ isOutgoing }: MessageProps) {
+export default function Message({ isOutgoing, content }: MessageProps) {
     return (
         <div className={clsx(
             "flex w-full mt-2",
             {"justify-end": isOutgoing}
         )}>
-            <div className="max-w-96 w-full bg-slate-900 p-4 rounded-lg">
-                Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
-                Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
-                when an unknown printer took a galley of type and scrambled it to make a type specimen book.
-                It has survived not only five centuries,
+            <div
+                className={clsx(
+                    "max-w-96 bg-blue-500 text-white px-4 py-2 rounded-lg",
+                    {"bg-slate-900": isOutgoing}
+                )}
+                >
+                    {content}
             </div>
         </div>
     );

@@ -13,6 +13,7 @@ export default function ChatPane() {
   const websocketRef = useRef<WebSocket| null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [messages, setMessages] = useState<MessageSend[]>([]);
 
   useEffect(() => {
     const token = localStorage.getItem("socketToken");
@@ -43,6 +44,8 @@ export default function ChatPane() {
       sentAt: new Date(),
       content: message
     }
+    setMessages([...messages, messageSend]);
+
     const encodedMessage = encodeMessageSend(messageSend);
     const packet: Packet = {
       version: 1,
@@ -51,8 +54,6 @@ export default function ChatPane() {
       payload: encodedMessage
     }
     const encodedPacket = encodePacket(packet);
-    console.log(encodedPacket);
-    
     websocketRef.current?.send(encodedPacket.buffer);
   }
 
@@ -63,8 +64,11 @@ export default function ChatPane() {
         <div className="ml-4 font-bold text-lg">John Doe</div>
       </div>
       <div className="flex flex-grow flex-col w-full overflow-y-scroll px-7">
-        <Message isOutgoing={false}/>
-        <Message isOutgoing={true}/>
+        {messages.map((message) => {
+          return (
+            <Message isOutgoing={true} content={message.content}/>
+          );
+        })}
       </div>
       <div className="flex flex-shrink-0 flex-grow-0 w-full border-t-2 border-blue-500 min-h-20">
         <div className="flex-grow border-r-2 border-blue-500">

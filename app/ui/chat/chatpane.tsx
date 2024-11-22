@@ -10,7 +10,8 @@ const socketURL = "ws://localhost:3000/ws2";
 
 export default function ChatPane() {
   const router = useRouter();
-  const websocket = useRef<WebSocket | null>(null);
+  const websocketRef = useRef<WebSocket| null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
@@ -19,26 +20,30 @@ export default function ChatPane() {
       router.push("/login");
     }
 
-    websocket.current = new WebSocket(`${socketURL}?token=${token}`);
-    websocket.current.onopen = () => {
+    websocketRef.current = new WebSocket(`${socketURL}?token=${token}`);
+    websocketRef.current.onopen = () => {
       console.log("connected to message server");
       setIsConnected(true);
     };
 
-    websocket.current.onclose = () => {
+    websocketRef.current.onclose = () => {
       setIsConnected(false);
       console.log('Disconnected from WebSocket');
     };
   }, []);
 
   function handleNewMessage() {
-    const message: MessageSend = {
+    const message = textareaRef.current?.value;
+    if (!message) {
+      return;
+    }
+    const messageSend: MessageSend = {
       senderId: BigInt(5),
       recipientId: BigInt(1),
       sentAt: new Date(),
-      content: "message from js"
+      content: message
     }
-    const encodedMessage = encodeMessageSend(message);
+    const encodedMessage = encodeMessageSend(messageSend);
     const packet: Packet = {
       version: 1,
       payloadType: PayloadType.MessageSend,
@@ -48,7 +53,7 @@ export default function ChatPane() {
     const encodedPacket = encodePacket(packet);
     console.log(encodedPacket);
     
-    websocket.current?.send(encodedPacket.buffer);
+    websocketRef.current?.send(encodedPacket.buffer);
   }
 
   return (
@@ -63,7 +68,7 @@ export default function ChatPane() {
       </div>
       <div className="flex flex-shrink-0 flex-grow-0 w-full border-t-2 border-blue-500 min-h-20">
         <div className="flex-grow border-r-2 border-blue-500">
-            <textarea className="min-h-full w-full p-2 bg-inherit text-white outline-none resize-none" placeholder="Type a message...">
+            <textarea ref={textareaRef} className="min-h-full w-full p-2 bg-inherit text-white outline-none resize-none" placeholder="Type a message...">
             </textarea>
         </div>
         <button onClick={handleNewMessage}>

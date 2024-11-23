@@ -2,7 +2,7 @@ import { CheckIcon } from "@heroicons/react/24/outline";
 
 export default function ChatCard() {
   return (
-    <div className="flex py-2 px-2 max-h-16 w-full hover:bg-slate-800 rounded-md cursor-default">
+    <div className="flex py-2 px-2 max-h-16 w-full hover:bg-zinc-600 rounded-md cursor-default">
       <div className="flex rounded-full w-12 h-12 bg-white flex-shrink-0"></div>
       <div className="ml-3 flex-grow overflow-hidden">
         <div className="flex justify-between">

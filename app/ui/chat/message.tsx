@@ -14,7 +14,7 @@ export default function Message({ isOutgoing, content }: MessageProps) {
             <div
                 className={clsx(
                     "max-w-96 bg-blue-500 text-white px-4 py-2 rounded-lg",
-                    {"bg-slate-900": isOutgoing}
+                    {"bg-zinc-600": isOutgoing}
                 )}
                 >
                     {content}

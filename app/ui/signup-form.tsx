@@ -12,7 +12,7 @@ import { Button } from './button';
 
 export default function SignupForm() {
   return (
-    <form className="space-y-3 bg-slate-900 rounded">
+    <form className="space-y-3 bg-blue-950 rounded">
       <div className="flex-1 rounded-lg px-6 pb-4 pt-8">
         <h1 className={`${lusitana.className} mb-3 text-2xl`}>
             Sign up

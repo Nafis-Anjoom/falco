@@ -46,7 +46,8 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 bg-slate-900 rounded">
+    // <form onSubmit={handleSubmit} className="space-y-3 bg-slate-900 rounded">
+    <form onSubmit={handleSubmit} className="space-y-3 bg-blue-950 rounded-lg">
       <div className="flex-1 rounded-lg px-6 pb-4 pt-8">
         <h1 className={`${lusitana.className} mb-3 text-2xl`}>
           Please log in to continue.

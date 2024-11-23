@@ -59,10 +59,12 @@ export default function ChatPane() {
 
   return (
     <div className="flex overflow-hidden flex-col w-full h-screen">
-      <div className="flex flex-shrink-0 flex-grow-0 border-b-2 border-blue-500 w-full max-h-14 p-2">
+      {/* top bar */}
+      <div className="flex flex-shrink-0 flex-grow-0 bg-zinc-800 w-full max-h-14 p-2">
         <div className="flex rounded-full w-10 h-10 bg-white flex-shrink-0"></div>
         <div className="ml-4 font-bold text-lg">John Doe</div>
       </div>
+      {/* top bar */}
       <div className="flex flex-grow flex-col w-full overflow-y-scroll px-7">
         {messages.map((message) => {
           return (
@@ -70,13 +72,15 @@ export default function ChatPane() {
           );
         })}
       </div>
-      <div className="flex flex-shrink-0 flex-grow-0 w-full border-t-2 border-blue-500 min-h-20">
-        <div className="flex-grow border-r-2 border-blue-500">
-            <textarea ref={textareaRef} className="min-h-full w-full p-2 bg-inherit text-white outline-none resize-none" placeholder="Type a message...">
+      {/* <div className="flex flex-shrink-0 flex-grow-0 w-full border-t-2 border-zinc-800 min-h-20"> */}
+      <div className="flex flex-shrink-0 flex-grow-0 w-full border-t-2 border-zinc-800">
+        <div className="flex-grow ">
+            <textarea ref={textareaRef} className="w-full p-2 bg-inherit text-white outline-none resize-none" placeholder="Type a message...">
             </textarea>
         </div>
         <button onClick={handleNewMessage}>
-          <div className="flex items-center px-2 py-2 bg-black flex-shrink-0 hover:bg-slate-900 hover:cursor-pointer">
+          {/* 479 */}
+          <div className="flex items-center px-2 py-2 mx-4 flex-shrink-0 rounded-xl bg-blue-500 hover:bg-blue-600 hover:cursor-pointer">
               <PaperAirplaneIcon className="w-6 h-6"/>
           </div>
         </button>

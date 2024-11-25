@@ -27,8 +27,8 @@ func (app *application) routes() http.Handler {
     mux.HandleFunc("POST /user", app.userService.createUserHandler) 
     mux.HandleFunc("POST /login", app.userService.LoginHandler)
 
-    mux.HandleFunc("GET /contacts/{id}", app.contactsService.GetContactsByUserHandler) 
-    mux.HandleFunc("POST /contacts", app.contactsService.createContactHandler) 
+    mux.HandleFunc("GET /user/{userId}/contacts", app.contactsService.GetContactsByUserHandler) 
+    mux.HandleFunc("POST /user/{userId}/contacts", app.contactsService.createContactHandler) 
 
     return mux
 }

@@ -29,9 +29,29 @@ func NewContactsService(models *database.Models) *ContactsService {
 }
 
 func (cs *ContactsService) createContactHandler(writer http.ResponseWriter, request *http.Request) {
-	var input createContactRequest
+	param := request.PathValue("userId")
+	if param == "" {
+		err := errors.New("missing id param")
+		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+		return
+	}
 
-	err := json.NewDecoder(request.Body).Decode(&input)
+	userId, err := strconv.ParseInt(param, 10, 64)
+	if err != nil {
+		err := errors.New("id parameter is not an integer")
+		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+		return
+	}
+
+    authenticatedUser := utils.ContextGetUser(request)
+    if authenticatedUser != userId {
+        err = errors.New("user not authorized")
+        utils.WriteErrorResponse(writer, request, http.StatusUnauthorized, err)
+        return
+    }
+
+	var input createContactRequest
+	err = json.NewDecoder(request.Body).Decode(&input)
 	if err != nil {
 		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
 		return
@@ -48,7 +68,6 @@ func (cs *ContactsService) createContactHandler(writer http.ResponseWriter, requ
 		return
 	}
 
-    userId := utils.ContextGetUser(request)
     contactId := contactUser.Id
     contactName := input.Name
 
@@ -62,7 +81,7 @@ func (cs *ContactsService) createContactHandler(writer http.ResponseWriter, requ
 }
 
 func (cs *ContactsService) GetContactsByUserHandler(writer http.ResponseWriter, request *http.Request) {
-	param := request.PathValue("id")
+	param := request.PathValue("userId")
 	if param == "" {
 		err := errors.New("missing id param")
 		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
@@ -75,6 +94,13 @@ func (cs *ContactsService) GetContactsByUserHandler(writer http.ResponseWriter, 
 		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
 		return
 	}
+
+    authenticatedUser := utils.ContextGetUser(request)
+    if authenticatedUser != userId {
+        err = errors.New("user not authorized")
+        utils.WriteErrorResponse(writer, request, http.StatusUnauthorized, err)
+        return
+    }
 
     // maybe create a DTO type for contacts???
 	output, err := cs.models.Contacts.GetContactsByUserId(userId)

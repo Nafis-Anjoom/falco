@@ -9,7 +9,7 @@ func (app *application) routes() http.Handler {
     mux := http.NewServeMux()
 
     mux.HandleFunc("GET /", func(writer http.ResponseWriter, request *http.Request) {})
-    mux.HandleFunc("OPTIONS /", func(writer http.ResponseWriter, request *http.Request) {
+    mux.HandleFunc("OPTIONS /*", func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
         writer.WriteHeader(http.StatusNoContent)
     })
@@ -26,6 +26,9 @@ func (app *application) routes() http.Handler {
     mux.HandleFunc("DELETE /user/{id}", app.userService.deleteUserByIdHandler) 
     mux.HandleFunc("POST /user", app.userService.createUserHandler) 
     mux.HandleFunc("POST /login", app.userService.LoginHandler)
+
+    mux.HandleFunc("GET /contacts/{id}", app.contactsService.GetContactsByUserHandler) 
+    mux.HandleFunc("POST /contacts", app.contactsService.createContactHandler) 
 
     return mux
 }

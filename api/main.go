@@ -17,10 +17,11 @@ import (
 )
 
 type application struct {
-	config         config
-	messageService *messaging.MessageService
-	userService    *UserService
-	authService    *auth.AuthService
+	config          config
+	messageService  *messaging.MessageService
+	userService     *UserService
+	contactsService *ContactsService
+	authService     *auth.AuthService
 }
 
 type config struct {
@@ -31,9 +32,8 @@ type config struct {
 
 func (app *application) serve() {
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", app.config.port),
-		Handler:      app.EnableCORS(app.LogRequest(app.authenticateDummy(app.routes()))),
-		// Handler:      app.LogRequest(app.authenticateDummy(app.routes())),
+		Addr:    fmt.Sprintf(":%d", app.config.port),
+		Handler: app.EnableCORS(app.LogRequest(app.authenticateDummy(app.routes()))),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  time.Minute,
 		WriteTimeout: time.Minute,
@@ -75,12 +75,14 @@ func main() {
 
 	messageService := messaging.NewMessageService(models, idGenerator, authService)
 	userService := NewUserService(models, authService)
+	contactsService := NewContactsService(models)
 
 	app := &application{
-		config:         config,
-		messageService: messageService,
-		userService:    userService,
-		authService:    authService,
+		config:          config,
+		messageService:  messageService,
+		userService:     userService,
+		authService:     authService,
+		contactsService: contactsService,
 	}
 
 	app.serve()

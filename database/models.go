@@ -14,11 +14,13 @@ var (
 type Models struct {
 	Users    UserModel
 	Messages MessageModel
+	Contacts ContactsModel
 }
 
 func NewModels(dbPool *pgxpool.Pool) *Models {
 	return &Models{
 		Users:    UserModel{dbPool: dbPool},
 		Messages: MessageModel{dbPool: dbPool},
+		Contacts: ContactsModel{dbPool: dbPool},
 	}
 }

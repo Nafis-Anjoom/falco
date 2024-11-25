@@ -20,7 +20,7 @@ var allowedUnauthorizedRoutes = [4]string{
 	"GET /",
 	"GET /ws2",
 	"POST /login",
-	"OPTIONS /login",
+	"POST /user",
 }
 
 func isAuthNeeded(method, path string) bool {
@@ -102,7 +102,16 @@ func (app *application) LogRequest(next http.Handler) http.Handler {
 
 func (app *application) EnableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		writer.Header().Set("Access-Control-Allow-Origin", "*")
+        writer.Header().Set("Access-Control-Allow-Origin", "*")
+        writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+        writer.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+        writer.Header().Set("Access-Control-Max-Age", "86400") // 24 hours cache
+
+        if request.Method == "OPTIONS" {
+            writer.WriteHeader(http.StatusNoContent)
+            return
+        }
+
 		next.ServeHTTP(writer, request)
 	})
 }

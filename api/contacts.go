@@ -15,7 +15,7 @@ type createContactRequest struct {
 }
 
 type Contact struct {
-	ContactId int64  `json:"contact_i"`
+	ContactId int64  `json:"contact_id"`
 	Name      string `json:"name"`
 	Email     string `json:"email"`
 }

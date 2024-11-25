@@ -73,7 +73,11 @@ func (cs *ContactsService) createContactHandler(writer http.ResponseWriter, requ
 
 	err = cs.models.Contacts.InsertContact(userId, contactId, contactName)
 	if err != nil {
-		utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
+        if errors .Is(err, database.DuplicateContactError) {
+            utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+        } else {
+            utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
+        }
 		return
 	}
 

@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -19,13 +20,21 @@ type ContactsModel struct {
 	dbPool *pgxpool.Pool
 }
 
+var (
+    DuplicateContactError = errors.New("Contact with email already exists")
+)
+
 // TODO: implement
 func (cm *ContactsModel) InsertContact(userId int64, contactId int64, contactName string) error {
 	sqlStmt := "insert into public.contacts(userId, contactId, name) values($1, $2, $3)"
 	_, err := cm.dbPool.Exec(context.Background(), sqlStmt, userId, contactId, contactName)
 
 	if err != nil {
-		return fmt.Errorf("%w: %w", InsertionError, err)
+		if err.Error() == `ERROR: duplicate key value violates unique constraint "contacts_pkey" (SQLSTATE 23505)` {
+			return DuplicateContactError 
+		} else {
+            return fmt.Errorf("%w: %w", InsertionError, err)
+		}
 	}
 	return nil
 }

@@ -58,7 +58,6 @@ func (as *AuthService) NewSockAuthToken(userId int64) (string, error) {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-    fmt.Println(as.jwtSecret)
 	return token.SignedString(as.jwtSecret)
 }
 

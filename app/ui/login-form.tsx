@@ -12,11 +12,6 @@ import { useRouter } from "next/navigation";
 import { FormEvent } from "react";
 import Link from "next/link";
 
-interface LoginResponse {
-  id: number;
-  token: String;
-}
-
 export default function LoginForm() {
   const router = useRouter();
 
@@ -32,13 +27,11 @@ export default function LoginForm() {
     const response = await fetch("http://localhost:3000/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ email, password }),
     });
 
-
     if (response.ok) {
-      const data = await response.json();
-      localStorage.setItem("socketToken", data.token)
       router.push("/");
     } else {
       // handle errors
@@ -46,7 +39,6 @@ export default function LoginForm() {
   }
 
   return (
-    // <form onSubmit={handleSubmit} className="space-y-3 bg-slate-900 rounded">
     <form onSubmit={handleSubmit} className="space-y-3 bg-blue-950 rounded-lg">
       <div className="flex-1 rounded-lg px-6 pb-4 pt-8">
         <h1 className={`${lusitana.className} mb-3 text-2xl`}>
@@ -81,11 +73,11 @@ export default function LoginForm() {
             </div>
           </div>
         </div>
-        <Button className="mt-4 w-full" aria-disabled={false}>
+        <Button type="submit" className="mt-4 w-full" aria-disabled={false}>
           Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
         </Button>
         <Link href="/signup">
-          <Button type="submit" className="mt-4 w-full" aria-disabled={false}>
+          <Button className="mt-4 w-full" aria-disabled={false}>
             Sign up <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
           </Button>
         </Link>

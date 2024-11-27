@@ -52,7 +52,7 @@ func (as *AuthService) NewSockAuthToken(userId int64) (string, error) {
 	claims := jwt.RegisteredClaims{
 		Issuer:    "falco",
 		Subject:   strconv.FormatInt(userId, 10),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)),
 		NotBefore: jwt.NewNumericDate(time.Now()),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	}

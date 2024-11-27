@@ -9,11 +9,12 @@ import {
 import { ArrowRightIcon } from "@heroicons/react/20/solid";
 import { Button } from "./button";
 import { useRouter } from "next/navigation";
-import { FormEvent } from "react";
+import React, { FormEvent, useState } from "react";
 import Link from "next/link";
 
 export default function LoginForm() {
   const router = useRouter();
+  const [loginError, setLoginErr] = useState<String | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,7 +35,10 @@ export default function LoginForm() {
     if (response.ok) {
       router.push("/");
     } else {
-      // handle errors
+      console.log("error");
+      const body = await response.json();
+      console.log(body);
+      setLoginErr(body["details"]);
     }
   }
 
@@ -81,7 +85,14 @@ export default function LoginForm() {
             Sign up <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
           </Button>
         </Link>
-        <div className="flex h-8 items-end space-x-1"></div>
+        <div className="flex h-8 items-end space-x-1">
+          {loginError && (
+            <>
+              <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+              <p className="text-sm text-red-500">{loginError}</p>
+            </>
+          )}
+        </div>
       </div>
     </form>
   );

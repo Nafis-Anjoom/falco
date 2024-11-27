@@ -48,6 +48,10 @@ type loginResponse struct {
 	Token string `json:"token"`
 }
 
+var (
+    emailPasswordMismatchError = errors.New("email or password incorrect")
+)
+
 func (us *UserService) LoginHandler(writer http.ResponseWriter, request *http.Request) {
 	var input loginRequest
 	err := json.NewDecoder(request.Body).Decode(&input)
@@ -66,11 +70,11 @@ func (us *UserService) LoginHandler(writer http.ResponseWriter, request *http.Re
 		return
 	}
 
-	// if !us.authService.PasswordMatches(input.Password, user.PasswordHash) {
-	// 	err = errors.New("Password does not match")
-	// 	utils.WriteErrorResponse(writer, request, http.StatusUnauthorized, err)
-	// 	return
-	// }
+	if !us.authService.PasswordMatches(input.Password, user.PasswordHash) {
+		err = errors.New("Password does not match")
+		utils.WriteErrorResponse(writer, request, http.StatusUnauthorized, emailPasswordMismatchError)
+		return
+	}
 
 	tokenString, err := us.authService.NewToken(user.Id)
 	if err != nil {
@@ -82,7 +86,30 @@ func (us *UserService) LoginHandler(writer http.ResponseWriter, request *http.Re
         Id: user.Id,
 		Token: tokenString,
 	}
+    
+    authCookie := &http.Cookie{
+        Name: "authToken",
+        Value: tokenString,
+        Path: "/",
+        Domain: "localhost",
+        SameSite: http.SameSiteLaxMode,
+        MaxAge: 24 * 60 * 60,
+        Secure: false,
+        HttpOnly: true,
+    }
 
+    userIdCookie := &http.Cookie{
+        Name: "userId",
+        Value: strconv.FormatInt(user.Id, 10),
+        Path: "/",
+        Domain: "localhost",
+        SameSite: http.SameSiteLaxMode,
+        MaxAge: 24 * 60 * 60,
+        Secure: false,
+        HttpOnly: true,
+    }
+    http.SetCookie(writer, authCookie)
+    http.SetCookie(writer, userIdCookie)
 	utils.WriteJSONResponse(writer, http.StatusOK, output)
 }
 
@@ -130,6 +157,28 @@ func (us *UserService) createUserHandler(writer http.ResponseWriter, request *ht
 		Token: tokenString,
 	}
 
+    authCookie := &http.Cookie{
+        Name: "authToken",
+        Value: tokenString,
+        Path: "/",
+        Domain: "http://localhost:3001",
+        MaxAge: 24 * 60 * 60,
+        Secure: false,
+        HttpOnly: true,
+    }
+
+    userIdCookie := &http.Cookie{
+        Name: "userId",
+        Value: strconv.FormatInt(id, 10),
+        Path: "/",
+        Domain: "http://localhost:3001",
+        MaxAge: 24 * 60 * 60,
+        Secure: false,
+        HttpOnly: true,
+    }
+
+    http.SetCookie(writer, authCookie)
+    http.SetCookie(writer, userIdCookie)
 	utils.WriteJSONResponse(writer, http.StatusCreated, output)
 }
 

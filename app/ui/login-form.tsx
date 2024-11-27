@@ -7,7 +7,6 @@ import {
   ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { ArrowRightIcon } from "@heroicons/react/20/solid";
-import { Button } from "./button";
 import { useRouter } from "next/navigation";
 import React, { FormEvent, useState } from "react";
 import Link from "next/link";
@@ -15,9 +14,11 @@ import Link from "next/link";
 export default function LoginForm() {
   const router = useRouter();
   const [loginError, setLoginErr] = useState<String | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setIsLoading(true);
 
     const formData = new FormData(event.currentTarget);
     const email = formData.get("email");
@@ -35,10 +36,9 @@ export default function LoginForm() {
     if (response.ok) {
       router.push("/");
     } else {
-      console.log("error");
       const body = await response.json();
-      console.log(body);
       setLoginErr(body["details"]);
+      setIsLoading(false);
     }
   }
 
@@ -77,13 +77,13 @@ export default function LoginForm() {
             </div>
           </div>
         </div>
-        <Button type="submit" className="mt-4 w-full" aria-disabled={false}>
+        <button className="mt-4 w-full flex h-10 items-center rounded-lg bg-blue-500 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 active:bg-blue-600 aria-disabled:cursor-not-allowed aria-disabled:opacity-50" aria-disabled={isLoading} >
           Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
-        </Button>
+        </button>
         <Link href="/signup">
-          <Button className="mt-4 w-full" aria-disabled={false}>
+          <button className="mt-4 w-full flex h-10 items-center rounded-lg bg-blue-500 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 active:bg-blue-600 aria-disabled:cursor-not-allowed aria-disabled:opacity-50" aria-disabled={isLoading} >
             Sign up <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
-          </Button>
+          </button>
         </Link>
         <div className="flex h-8 items-end space-x-1">
           {loginError && (

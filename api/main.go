@@ -33,7 +33,8 @@ type config struct {
 func (app *application) serve() {
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", app.config.port),
-		Handler: app.EnableCORS(app.LogRequest(app.authenticateDummy(app.routes()))),
+		// Handler: app.EnableCORS(app.LogRequest(app.authenticateDummy(app.routes()))),
+		Handler: app.EnableCORS(app.LogRequest(app.authenticate(app.routes()))),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  time.Minute,
 		WriteTimeout: time.Minute,

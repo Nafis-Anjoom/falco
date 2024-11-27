@@ -36,22 +36,7 @@ func NewMessageService(models *database.Models, idGenerator *idGenerator.IdGener
 }
 
 func (ms *MessageService) InitializeClientHandler(writer http.ResponseWriter, request *http.Request) {
-	query := request.URL.Query()
-	tokenString := query.Get("token")
-	if tokenString == "" {
-		err := errors.New("missing token")
-		utils.WriteErrorResponse(writer, request, http.StatusUnauthorized, err)
-		return
-	}
-
-    userId, err := ms.authService.VerifyToken(tokenString)
-    if err != nil {
-        log.Println(err)
-		utils.WriteErrorResponse(writer, request, http.StatusUnauthorized, err)
-        return
-    }
-
-	log.Println("attempting to set up socket. Source: ", request.RemoteAddr)
+    userId := utils.ContextGetUser(request)
 	conn, err := utils.Upgrader.Upgrade(writer, request, nil)
 	if err != nil {
 		log.Println("error during upgrade:", err)

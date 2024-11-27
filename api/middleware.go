@@ -2,7 +2,6 @@ package main
 
 import (
 	"chat/utils"
-	"context"
 	"errors"
 	"log"
 	"net/http"
@@ -16,9 +15,8 @@ var (
 	invalidAuthHeaderError = errors.New("Invalid Authorization header")
 )
 
-var allowedUnauthorizedRoutes = [4]string{
+var allowedUnauthorizedRoutes = [3]string{
 	"GET /",
-	"GET /ws2",
 	"POST /login",
 	"POST /user",
 }
@@ -41,7 +39,6 @@ func (app *application) authenticateDummy(next http.Handler) http.Handler {
 		}
 
 		header := request.Header.Get("Authorization")
-    
 		if header == "" {
 			utils.WriteErrorResponse(writer, request, http.StatusUnauthorized, missingAuthHeaderError)
 			return
@@ -55,7 +52,6 @@ func (app *application) authenticateDummy(next http.Handler) http.Handler {
 
 		userIdString := headerParts[1]
 		userId, err := strconv.ParseInt(userIdString, 10, 64)
-
 		if err != nil {
 			utils.WriteErrorResponse(writer, request, http.StatusUnauthorized, err)
 			return
@@ -80,15 +76,14 @@ func (app *application) authenticate(next http.Handler) http.Handler {
             utils.WriteErrorResponse(writer, request, http.StatusUnauthorized, err)
             return
         }
-
 		userId, err := app.authService.VerifyToken(authTokenCookie.Value)
 		if err != nil {
 			utils.WriteErrorResponse(writer, request, http.StatusUnauthorized, err)
 			return
 		}
 
-		ctx := context.WithValue(request.Context(), "userId", userId)
-		next.ServeHTTP(writer, request.WithContext(ctx))
+		req := utils.ContextSetUser(request, userId)
+		next.ServeHTTP(writer, req)
 	})
 }
 

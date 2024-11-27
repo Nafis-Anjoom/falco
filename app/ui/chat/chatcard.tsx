@@ -7,7 +7,7 @@ export default function ChatCard() {
       <div className="ml-3 flex-grow overflow-hidden">
         <div className="flex justify-between">
           <span className="truncate pr-2 font-semibold">
-            John Doesd as fdsa rsefg jdsf
+            John Doe
           </span>
           <span className="block text-sm flex-shrink-0">2024-11-15</span>
         </div>
@@ -15,11 +15,9 @@ export default function ChatCard() {
         <div className="flex items-baseline">
           <CheckIcon className="w-3.5 h-3.5 flex-shrink-0" />
           <div className="w-full truncate ml-1">
-            Chat adf asdf adsf asdf dasf dasdf is this asd fads f
+            A quick brown fox jumps ove a lazy dog
           </div>
-          <div className="bg-blue-500 text-sm text-center rounded-full flex-shrink-0 ml-1 h-5 w-5">
-            99
-          </div>
+          <div className="bg-blue-500 text-sm text-center rounded-full flex-shrink-0 ml-1 h-5 w-5">1</div>
         </div>
       </div>
     </div>

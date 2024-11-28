@@ -10,13 +10,16 @@ import {
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from './button';
 import { useRouter } from 'next/navigation';
-import { FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
 
 export default function SignupForm() {
   const router = useRouter();
+  const [signupError, setSignupError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setIsLoading(true);
 
     const formData = new FormData(event.currentTarget);
     const firstname = formData.get("firstname");
@@ -39,11 +42,11 @@ export default function SignupForm() {
     if (response.ok) {
       router.push("/");
     } else {
-      console.log("error");
-      console.log(response);
+      const body = await response.json();
+      setSignupError(body["details"]);
+      setIsLoading(false);
     }
   }
-
 
   return (
     <form className="space-y-3 bg-blue-950 rounded" onSubmit={handleSubmit}>
@@ -120,10 +123,16 @@ export default function SignupForm() {
             </div>
           </div>
         </div>
-        <Button className="mt-4 w-full" aria-disabled={false} type='submit'>
+        <Button className="mt-4 w-full" aria-disabled={isLoading} type='submit'>
           Sign up <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
         </Button>
         <div className="flex h-8 items-end space-x-1">
+          {signupError && (
+            <>
+              <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+              <p className="text-sm text-red-500">{signupError}</p>
+            </>
+          )}
         </div>
       </div>
     </form>

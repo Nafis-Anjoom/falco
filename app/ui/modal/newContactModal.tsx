@@ -12,11 +12,20 @@ import { Button } from "../button";
 
 export function NewContactModal() {
   const modalRef = useRef<HTMLDialogElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   function handleClose() {
-    
+    if (nameRef.current) {
+      nameRef.current.value = "";
+    }
+    if (emailRef.current) {
+      emailRef.current.value = "";
+    }
+    setErrorMessage(null);
+    modalRef.current?.close();
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -72,6 +81,7 @@ export function NewContactModal() {
                 <input
                   className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm text-black outline-2 placeholder:text-gray-500"
                   id="name"
+                  ref={nameRef}
                   type="text"
                   name="name"
                   placeholder="Name"
@@ -83,6 +93,7 @@ export function NewContactModal() {
                 <input
                   className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm text-black outline-2 placeholder:text-gray-500"
                   id="email"
+                  ref={emailRef}
                   type="text"
                   name="email"
                   placeholder="Email"
@@ -112,8 +123,7 @@ export function NewContactModal() {
               <Button
                 className="mt-4 w-full bg-red-600 hover:bg-red-400"
                 aria-disabled={isLoading}
-                type="submit"
-                onClick={() => modalRef.current?.close()}
+                onClick={handleClose}
               >
                 Close{" "}
                 <XMarkIcon className="ml-auto h-5 w-5 text-gray-50" />

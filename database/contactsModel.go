@@ -24,7 +24,6 @@ var (
     DuplicateContactError = errors.New("Contact with email already exists")
 )
 
-// TODO: implement
 func (cm *ContactsModel) InsertContact(userId int64, contactId int64, contactName string) error {
 	sqlStmt := "insert into public.contacts(userId, contactId, name) values($1, $2, $3)"
 	_, err := cm.dbPool.Exec(context.Background(), sqlStmt, userId, contactId, contactName)
@@ -44,8 +43,7 @@ func (cm *ContactsModel) DeleteContact(userId, contactId int64) error {
 	return nil
 }
 
-// TODO: implement
-func (cm *ContactsModel) GetContactsByUserId(userId int64) ([]Contact, error) {
+func (cm *ContactsModel) GetContacts(userId int64) ([]Contact, error) {
 	sqlStmt := `
     SELECT contacts.contactId, contacts.name, users.email
     FROM public.contacts
@@ -53,6 +51,26 @@ func (cm *ContactsModel) GetContactsByUserId(userId int64) ([]Contact, error) {
     WHERE contacts.userId = $1`
 
 	rows, _ := cm.dbPool.Query(context.Background(), sqlStmt, userId)
+	contacts, err := pgx.CollectRows(rows, pgx.RowToStructByName[Contact])
+	if err != nil {
+		log.Println("error retrieving contacts:", err)
+		return nil, err
+	}
+
+	return contacts, nil
+}
+
+func (cm *ContactsModel) GetFilteredContacts(userId int64, query string) ([]Contact, error) {
+	sqlStmt := `
+    SELECT contacts.contactId, contacts.name, users.email
+    FROM public.contacts
+    JOIN public.users on contacts.contactId = users.id
+    WHERE contacts.userId = $1 AND (
+    contacts.name ILIKE $2 OR
+    users.email ILIKE $2);`
+
+    query = "%" + query + "%"
+	rows, _ := cm.dbPool.Query(context.Background(), sqlStmt, userId, query)
 	contacts, err := pgx.CollectRows(rows, pgx.RowToStructByName[Contact])
 	if err != nil {
 		log.Println("error retrieving contacts:", err)

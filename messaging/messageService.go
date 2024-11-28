@@ -23,6 +23,13 @@ type MessageService struct {
 	authService       *auth.AuthService
 }
 
+type ChatPreview struct {
+	UserId   int64     `json:"userId"`
+	UserName string    `json:"userName"`
+	Message  string    `json:"message"`
+	SentAt   time.Time `json:"sentAt"`
+}
+
 func NewMessageService(models *database.Models, idGenerator *idGenerator.IdGenerator, authService *auth.AuthService) *MessageService {
 	return &MessageService{
 		IdGenerator:       idGenerator,
@@ -35,8 +42,26 @@ func NewMessageService(models *database.Models, idGenerator *idGenerator.IdGener
 	}
 }
 
+// TODO: implement
+func (ms *MessageService) GetChatPreviewsHandler(writer http.ResponseWriter, request *http.Request) {
+	chats := []ChatPreview{
+		{UserId: 101, UserName: "Alice", Message: "Hey, how are you?", SentAt: time.Now().Add(-time.Minute * 5)},
+		{UserId: 102, UserName: "Bob", Message: "I'm good, thanks!", SentAt: time.Now().Add(-time.Minute * 10)},
+		{UserId: 103, UserName: "Charlie", Message: "Let's meet up soon.", SentAt: time.Now().Add(-time.Minute * 15)},
+		{UserId: 104, UserName: "David", Message: "Sounds good to me!", SentAt: time.Now().Add(-time.Minute * 20)},
+		{UserId: 105, UserName: "Eva", Message: "What's the plan for tomorrow?", SentAt: time.Now().Add(-time.Minute * 25)},
+		{UserId: 106, UserName: "Frank", Message: "I think we should head to the park.", SentAt: time.Now().Add(-time.Minute * 30)},
+		{UserId: 107, UserName: "Grace", Message: "I'm in, let's go!", SentAt: time.Now().Add(-time.Minute * 35)},
+		{UserId: 108, UserName: "Hannah", Message: "Is it going to rain?", SentAt: time.Now().Add(-time.Minute * 40)},
+		{UserId: 109, UserName: "Ivy", Message: "I heard it's supposed to be sunny.", SentAt: time.Now().Add(-time.Minute * 45)},
+		{UserId: 110, UserName: "Jack", Message: "Great, I'll bring a picnic!", SentAt: time.Now().Add(-time.Minute * 50)},
+	}
+
+	utils.WriteJSONResponse(writer, http.StatusOK, chats)
+}
+
 func (ms *MessageService) InitializeClientHandler(writer http.ResponseWriter, request *http.Request) {
-    userId := utils.ContextGetUser(request)
+	userId := utils.ContextGetUser(request)
 	conn, err := utils.Upgrader.Upgrade(writer, request, nil)
 	if err != nil {
 		log.Println("error during upgrade:", err)

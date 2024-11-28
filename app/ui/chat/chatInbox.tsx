@@ -5,6 +5,7 @@ import { NewContactModal } from "../modal/newContactModal";
 import { useDebouncedCallback } from "use-debounce";
 import clsx from "clsx";
 import { ChatPreview, Contact, User } from "@/app/lib/definitions";
+import { usePathname, useRouter } from "next/navigation";
 import { CheckIcon } from "@heroicons/react/24/outline";
 
 enum Tab {
@@ -13,6 +14,8 @@ enum Tab {
 }
 
 export default function ChatInbox() {
+  const router = useRouter();
+
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [chatPreviews, setChatPreviews] = useState<ChatPreview[]>([]);
@@ -34,6 +37,7 @@ export default function ChatInbox() {
           const body = await response.json();
           console.log("error");
           console.log(body);
+          router.push("/login");
         }
       } catch (error) {
         console.log(error);
@@ -41,6 +45,7 @@ export default function ChatInbox() {
     };
 
     fetchCurrentUser();
+    console.log("fetched users");
   }, []);
 
   useEffect(() => {
@@ -61,6 +66,7 @@ export default function ChatInbox() {
           console.log(body);
         }
       } catch (error) {
+        router.push("/login");
         console.log(error);
       }
     };
@@ -80,6 +86,7 @@ export default function ChatInbox() {
           const body = await response.json();
           console.log("error");
           console.log(body);
+          router.push("/login"); 
         }
       } catch (error) {
         console.log(error);
@@ -88,8 +95,10 @@ export default function ChatInbox() {
 
     if (currentTab === Tab.Chats) {
       fetchChatPreviews();
+      console.log("fetched previews");
     } else {
       fetchContacts();
+      console.log("fetched contacts");
     }
   }, [currentTab]);
 
@@ -159,11 +168,17 @@ export default function ChatInbox() {
 }
 
 function ChatPreviews({ items }: { items: ChatPreview[] }): JSX.Element {
+  const { replace } = useRouter();
+
   return (
     <>
       {items.map((item) => {
         return (
-          <div key={Number(item.userId)} className="flex py-2 px-2 max-h-16 w-full hover:bg-zinc-600 rounded-md cursor-default">
+          <div
+            onClick={() => replace(`http://localhost:3001/chat/${item.userId}`)}
+            key={Number(item.userId)}
+            className="flex py-2 px-2 max-h-16 w-full hover:bg-zinc-600 rounded-md cursor-default"
+          >
             <div className="flex rounded-full w-12 h-12 bg-white flex-shrink-0"></div>
             <div className="ml-3 flex-grow overflow-hidden">
               <div className="flex justify-between">
@@ -189,20 +204,25 @@ function ChatPreviews({ items }: { items: ChatPreview[] }): JSX.Element {
 }
 
 function Contacts({ items }: { items: Contact[] }): JSX.Element {
+  const { replace } = useRouter();
+
   return (
     <>
-      {items.map((items) => {
+      {items.map((item) => {
         return (
-          <div key={items.contactId} className="flex py-2 px-2 max-h-16 w-full hover:bg-zinc-600 rounded-md cursor-default">
+          <div 
+            key={item.contactId}
+            onClick={() => replace(`http://localhost:3001/chat/${item.contactId}`)}
+            className="flex py-2 px-2 max-h-16 w-full hover:bg-zinc-600 rounded-md cursor-default">
             <div className="flex rounded-full w-12 h-12 bg-white flex-shrink-0"></div>
             <div className="ml-3 flex-grow overflow-hidden">
               <div className="flex justify-between">
                 <span className="truncate pr-2 font-semibold">
-                  {items.name}
+                  {item.name}
                 </span>
               </div>
               <div className="flex items-baseline">
-                <div className="w-full truncate ml-1">Email: {items.email}</div>
+                <div className="w-full truncate ml-1">Email: {item.email}</div>
               </div>
             </div>
           </div>

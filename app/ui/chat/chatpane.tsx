@@ -2,16 +2,29 @@ import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import Message from "./message";
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MessageSend, Packet, PayloadType, encodeMessageSend, encodePacket } from "@/app/lib/protocol";
+import {
+  MessageSend,
+  Packet,
+  PayloadType,
+  encodeMessageSend,
+  encodePacket,
+} from "@/app/lib/protocol";
 
 const socketURL = "ws://localhost:3000/ws2";
 
 export default function ChatPane() {
   const router = useRouter();
-  const websocketRef = useRef<WebSocket| null>(null);
+  const websocketRef = useRef<WebSocket | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState<MessageSend[]>([]);
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleNewMessage();
+    }
+  }
 
   useEffect(() => {
     websocketRef.current = new WebSocket(socketURL);
@@ -27,22 +40,30 @@ export default function ChatPane() {
 
     websocketRef.current.onclose = () => {
       setIsConnected(false);
-      console.log('Disconnected from WebSocket');
-    };
+      console.log("Disconnected from WebSocket");
+    }
   }, []);
 
   function handleNewMessage() {
-    const message = textareaRef.current?.value;
-    if (!message) {
+    if (!textareaRef.current) {
       return;
     }
+
+    const message = textareaRef.current.value;
+    if (!message || message === "") {
+      return;
+    }
+
     const messageSend: MessageSend = {
       senderId: BigInt(5),
       recipientId: BigInt(1),
       sentAt: new Date(),
-      content: message
-    }
+      content: message,
+    };
+
     setMessages([...messages, messageSend]);
+
+    textareaRef.current.value = "";
 
     const encodedMessage = encodeMessageSend(messageSend);
     const packet: Packet = {
@@ -65,21 +86,23 @@ export default function ChatPane() {
       {/* top bar */}
       <div className="flex flex-grow flex-col w-full overflow-y-scroll px-7">
         {messages.map((message) => {
-          return (
-            <Message isOutgoing={true} content={message.content}/>
-          );
+          return <Message isOutgoing={true} content={message.content} />;
         })}
       </div>
       {/* <div className="flex flex-shrink-0 flex-grow-0 w-full border-t-2 border-zinc-800 min-h-20"> */}
       <div className="flex flex-shrink-0 flex-grow-0 w-full border-t-2 border-zinc-800">
         <div className="flex-grow ">
-            <textarea ref={textareaRef} className="w-full p-2 bg-inherit text-white outline-none resize-none" placeholder="Type a message...">
-            </textarea>
+          <textarea
+            onKeyDown={handleKeyDown}
+            ref={textareaRef}
+            className="w-full p-2 bg-inherit text-white outline-none resize-none"
+            placeholder="Type a message..."
+          ></textarea>
         </div>
         <button onClick={handleNewMessage}>
           {/* 479 */}
           <div className="flex items-center px-2 py-2 mx-4 flex-shrink-0 rounded-xl bg-blue-500 hover:bg-blue-600 hover:cursor-pointer">
-              <PaperAirplaneIcon className="w-6 h-6"/>
+            <PaperAirplaneIcon className="w-6 h-6" />
           </div>
         </button>
       </div>

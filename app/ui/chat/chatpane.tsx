@@ -3,10 +3,8 @@ import Message from "./message";
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MessageSend, Packet, PayloadType, encodeMessageSend, encodePacket } from "@/app/lib/protocol";
-import Cookies from "js-cookie";
 
 const socketURL = "ws://localhost:3000/ws2";
-
 
 export default function ChatPane() {
   const router = useRouter();

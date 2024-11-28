@@ -10,10 +10,11 @@ import { ArrowRightIcon } from "@heroicons/react/20/solid";
 import { useRouter } from "next/navigation";
 import React, { FormEvent, useState } from "react";
 import Link from "next/link";
+import { Button } from "./button";
 
 export default function LoginForm() {
   const router = useRouter();
-  const [loginError, setLoginError] = useState<String | null>(null);
+  const [errorMessage, setErrorMessage] = useState<String | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -37,7 +38,7 @@ export default function LoginForm() {
       router.push("/");
     } else {
       const body = await response.json();
-      setLoginError(body["details"]);
+      setErrorMessage(body["details"]);
       setIsLoading(false);
     }
   }
@@ -77,23 +78,19 @@ export default function LoginForm() {
             </div>
           </div>
         </div>
-        <button className="mt-4 w-full flex h-10 items-center rounded-lg bg-blue-500 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 active:bg-blue-600 aria-disabled:cursor-not-allowed aria-disabled:opacity-50" aria-disabled={isLoading} >
-          Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
-        </button>
+          <Button className="mt-4 w-full" aria-disabled={isLoading} type="submit">
+            Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
+          </Button>
         <Link href="/signup">
-          <button 
-            className="mt-4 w-full flex h-10 items-center rounded-lg bg-blue-500 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 active:bg-blue-600 aria-disabled:cursor-not-allowed aria-disabled:opacity-50" 
-            aria-disabled={isLoading}
-            onClick={() => setIsLoading(true)}
-            >
+          <Button className="mt-4 w-full" aria-disabled={isLoading} onClick={() => setIsLoading(true)}>
             Sign up <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
-          </button>
+          </Button>
         </Link>
         <div className="flex h-8 items-end space-x-1">
-          {loginError && (
+          {errorMessage && (
             <>
               <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
-              <p className="text-sm text-red-500">{loginError}</p>
+              <p className="text-sm text-red-500">{errorMessage}</p>
             </>
           )}
         </div>

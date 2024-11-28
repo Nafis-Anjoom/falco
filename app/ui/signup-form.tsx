@@ -14,7 +14,7 @@ import { FormEvent, useState } from 'react';
 
 export default function SignupForm() {
   const router = useRouter();
-  const [signupError, setSignupError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -43,7 +43,7 @@ export default function SignupForm() {
       router.push("/");
     } else {
       const body = await response.json();
-      setSignupError(body["details"]);
+      setErrorMessage(body["details"]);
       setIsLoading(false);
     }
   }
@@ -127,10 +127,10 @@ export default function SignupForm() {
           Sign up <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
         </Button>
         <div className="flex h-8 items-end space-x-1">
-          {signupError && (
+          {errorMessage && (
             <>
               <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
-              <p className="text-sm text-red-500">{signupError}</p>
+              <p className="text-sm text-red-500">{errorMessage}</p>
             </>
           )}
         </div>

@@ -1,12 +1,12 @@
-"use client";
-
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import Message from "./message";
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MessageSend, Packet, PayloadType, encodeMessageSend, encodePacket } from "@/app/lib/protocol";
+import Cookies from "js-cookie";
 
 const socketURL = "ws://localhost:3000/ws2";
+
 
 export default function ChatPane() {
   const router = useRouter();
@@ -16,16 +16,16 @@ export default function ChatPane() {
   const [messages, setMessages] = useState<MessageSend[]>([]);
 
   useEffect(() => {
-    const token = localStorage.getItem("socketToken");
-    if (!token || token == null) {
-      router.push("/login");
-    }
-
-    websocketRef.current = new WebSocket(`${socketURL}?token=${token}`);
+    websocketRef.current = new WebSocket(socketURL);
     websocketRef.current.onopen = () => {
       console.log("connected to message server");
       setIsConnected(true);
     };
+
+    websocketRef.current.onerror = () => {
+      console.log("socket error");
+      router.push("/login");
+    }
 
     websocketRef.current.onclose = () => {
       setIsConnected(false);

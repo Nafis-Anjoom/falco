@@ -1,3 +1,5 @@
+"use client";
+
 import Sidebar from "@/app/ui/sidebar";
 import ChatInbox from "@/app/ui/chat/chatInbox";
 import ChatPane from "../ui/chat/chatpane";

@@ -18,7 +18,7 @@ export default function ChatPane() {
   const router = useRouter();
   const websocketRef = useRef<WebSocket | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [isConnected, setIsConnected] = useState(false);
+  // const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState<MessageSend[]>([]);
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -32,7 +32,7 @@ export default function ChatPane() {
     websocketRef.current = new WebSocket(socketURL);
     websocketRef.current.onopen = () => {
       console.log("connected to message server");
-      setIsConnected(true);
+      // setIsConnected(true);
     };
 
     websocketRef.current.onerror = () => {
@@ -41,7 +41,7 @@ export default function ChatPane() {
     }
 
     websocketRef.current.onclose = () => {
-      setIsConnected(false);
+      // setIsConnected(false);
       console.log("Disconnected from WebSocket");
     }
   }, []);
@@ -87,8 +87,8 @@ export default function ChatPane() {
       </div>
       {/* top bar */}
       <div className="flex flex-grow flex-col w-full overflow-y-scroll px-7">
-        {messages.map((message) => {
-          return <Message isOutgoing={true} content={message.content} />;
+        {messages.map((message, index) => {
+          return <Message key={index} isOutgoing={true} content={message.content} />;
         })}
       </div>
       {/* <div className="flex flex-shrink-0 flex-grow-0 w-full border-t-2 border-zinc-800 min-h-20"> */}

@@ -14,7 +14,7 @@ import { Button } from "./button";
 
 export default function LoginForm() {
   const router = useRouter();
-  const [errorMessage, setErrorMessage] = useState<String | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

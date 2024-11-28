@@ -2,7 +2,7 @@ import clsx from "clsx";
 
 interface MessageProps {
     isOutgoing: boolean;
-    content: String;
+    content: string;
 }
 
 export default function Message({ isOutgoing, content }: MessageProps) {

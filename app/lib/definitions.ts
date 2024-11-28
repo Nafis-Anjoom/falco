@@ -13,7 +13,7 @@ export interface User {
 }
 
 export interface ChatPreview {
-  userId: BigInt;
+  userId: bigint;
   userName: string;
   message: string;
   sentAt: Date;

@@ -33,8 +33,8 @@ type createUserResponse struct {
 
 type getUserResponse struct {
 	Id        int64  `josn:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
 	Email     string `json:"email"`
 }
 
@@ -135,7 +135,6 @@ func (us *UserService) createUserHandler(writer http.ResponseWriter, request *ht
 	}
 
 	user.PasswordHash = passwordHash
-
 	id, err := us.models.Users.InsertUser(user)
 	if err != nil {
 		if errors.Is(err, database.DuplicateEmailError) {
@@ -180,6 +179,33 @@ func (us *UserService) createUserHandler(writer http.ResponseWriter, request *ht
     http.SetCookie(writer, authCookie)
     http.SetCookie(writer, userIdCookie)
 	utils.WriteJSONResponse(writer, http.StatusCreated, output)
+}
+
+func (us *UserService) getCurrentUserHandler(writer http.ResponseWriter, request *http.Request) {
+    userId := utils.ContextGetUser(request)
+	user, err := us.models.Users.GetUserById(userId)
+	if err != nil {
+		switch {
+		case errors.Is(err, database.UserNotFoundError):
+			utils.WriteErrorResponse(writer, request, http.StatusNotFound, err)
+		default:
+			utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+		}
+		return
+	}
+
+	output := getUserResponse{
+		Id:        user.Id,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+	}
+
+	err = utils.WriteJSONResponse(writer, http.StatusOK, output)
+	if err != nil {
+		utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
+		return
+	}
 }
 
 func (us *UserService) getUserByIdHandler(writer http.ResponseWriter, request *http.Request) {

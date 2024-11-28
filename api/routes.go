@@ -22,13 +22,14 @@ func (app *application) routes() http.Handler {
         messaging.ServeWs(app.messageService, w, r)
     })
 
+    mux.HandleFunc("GET /user/me", app.userService.getCurrentUserHandler) 
     mux.HandleFunc("GET /user/{id}", app.userService.getUserByIdHandler) 
     mux.HandleFunc("DELETE /user/{id}", app.userService.deleteUserByIdHandler) 
     mux.HandleFunc("POST /user", app.userService.createUserHandler) 
     mux.HandleFunc("POST /login", app.userService.LoginHandler)
 
-    mux.HandleFunc("GET /user/{userId}/contacts", app.contactsService.GetContactsByUserHandler) 
-    mux.HandleFunc("POST /user/{userId}/contacts", app.contactsService.createContactHandler) 
+    mux.HandleFunc("GET /contacts", app.contactsService.GetContactsHandler) 
+    mux.HandleFunc("POST /contacts", app.contactsService.createContactHandler) 
 
     return mux
 }

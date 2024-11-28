@@ -111,7 +111,7 @@ export default function ChatInbox() {
   });
 
   return (
-    <div className="flex h-full flex-col bg-zinc-800 pt-4 pl-4 w-96">
+    <div className="flex h-full min-w-96 flex-col bg-zinc-800 pt-4 pl-4">
       <div className="flex justify-between">
         <div className="text-xl font-bold">Hi, {currentUser?.firstName}</div>
         <div className="flex pr-4">
@@ -137,9 +137,7 @@ export default function ChatInbox() {
         </div>
         <div
           className={clsx(
-            currentTab === Tab.Contacts
-              ? "bg-blue-600"
-              : "border border-blue-600",
+            currentTab === Tab.Contacts ? "bg-blue-600" : "border border-blue-600",
             "flex text-lg my-2 px-2 py-1 rounded-lg mx-1 hover:bg-blue-400 cursor-pointer"
           )}
           onClick={() => setCurrentTab(Tab.Contacts)}

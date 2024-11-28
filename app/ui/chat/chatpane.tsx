@@ -1,3 +1,5 @@
+"use client";
+
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import Message from "./message";
 import React, { useEffect, useRef, useState } from "react";

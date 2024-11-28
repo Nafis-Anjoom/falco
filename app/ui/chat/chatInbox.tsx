@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { NewContactModal } from "../modal/newContactModal";
 import { useDebouncedCallback } from "use-debounce";
@@ -111,7 +113,7 @@ export default function ChatInbox() {
   });
 
   return (
-    <div className="flex h-full min-w-96 flex-col bg-zinc-800 pt-4 pl-4">
+    <div className="flex h-full w-full flex-col bg-zinc-800 pt-4 pl-4">
       <div className="flex justify-between">
         <div className="text-xl font-bold">Hi, {currentUser?.firstName}</div>
         <div className="flex pr-4">

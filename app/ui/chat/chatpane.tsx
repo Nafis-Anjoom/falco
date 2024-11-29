@@ -2,7 +2,7 @@
 
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import Message from "./message";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   MessageSend,
@@ -12,13 +12,9 @@ import {
   encodePacket,
 } from "@/app/lib/protocol";
 
-const socketURL = "ws://localhost:3000/ws2";
-
 export default function ChatPane() {
   const router = useRouter();
-  const websocketRef = useRef<WebSocket | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  // const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState<MessageSend[]>([]);
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -27,24 +23,6 @@ export default function ChatPane() {
       handleNewMessage();
     }
   }
-
-  useEffect(() => {
-    websocketRef.current = new WebSocket(socketURL);
-    websocketRef.current.onopen = () => {
-      console.log("connected to message server");
-      // setIsConnected(true);
-    };
-
-    websocketRef.current.onerror = () => {
-      console.log("socket error");
-      router.push("/login");
-    }
-
-    websocketRef.current.onclose = () => {
-      // setIsConnected(false);
-      console.log("Disconnected from WebSocket");
-    }
-  }, []);
 
   function handleNewMessage() {
     if (!textareaRef.current) {
@@ -75,7 +53,6 @@ export default function ChatPane() {
       payload: encodedMessage
     }
     const encodedPacket = encodePacket(packet);
-    websocketRef.current?.send(encodedPacket.buffer);
   }
 
   return (

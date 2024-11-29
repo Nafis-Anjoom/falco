@@ -1,7 +1,5 @@
-type PageParams = {
-  params: {id: string}
-}
+"use client";
 
-export default function Page({ params }: PageParams) {
-  return<h1>{params.id}</h1>
+export default function Page() {
+  return (<h1>hello</h1>);
 }

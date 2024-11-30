@@ -1,9 +1,6 @@
-"use client";
-
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import Message from "./message";
 import React, { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   MessageSend,
   Packet,
@@ -11,9 +8,13 @@ import {
   encodeMessageSend,
   encodePacket,
 } from "@/app/lib/protocol";
+import { Contact } from "@/app/lib/definitions";
 
-export default function ChatPane() {
-  const router = useRouter();
+type ChatPaneProps = {
+  contact: Contact;
+}
+
+export default function ChatPane({ contact }: ChatPaneProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<MessageSend[]>([]);
 
@@ -60,7 +61,7 @@ export default function ChatPane() {
       {/* top bar */}
       <div className="flex flex-shrink-0 flex-grow-0 bg-zinc-800 w-full max-h-14 p-2">
         <div className="flex rounded-full w-10 h-10 bg-white flex-shrink-0"></div>
-        <div className="ml-4 font-bold text-lg">John Doe</div>
+        <div className="ml-4 font-bold text-lg">{contact.name}</div>
       </div>
       {/* top bar */}
       <div className="flex flex-grow flex-col w-full overflow-y-scroll px-7">

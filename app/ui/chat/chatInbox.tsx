@@ -1,19 +1,23 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { NewContactModal } from "../modal/newContactModal";
 import { useDebouncedCallback } from "use-debounce";
-import clsx from "clsx";
 import { ChatPreview, Contact, User } from "@/app/lib/definitions";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { CheckIcon } from "@heroicons/react/24/outline";
+import clsx from "clsx";
+import Preview from "./chatPreview";
+import ContactCard from "./contactCard";
 
 enum Tab {
   Chats,
   Contacts,
 }
 
-export default function ChatInbox() {
+type ChatInboxProps = {
+  setChat: (chat: Contact | null) => void,
+}
+
+export default function ChatInbox({ setChat }: ChatInboxProps) {
   const router = useRouter();
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -158,85 +162,11 @@ export default function ChatInbox() {
       </div>
       <div className="flex flex-col mt-3 pr-4 max-w-full h-[700px] overflow-scroll">
         {currentTab === Tab.Contacts ? (
-          <Contacts items={contacts} />
+          contacts.map((item) => <ContactCard contact={item} setChat={setChat}/>)
         ) : (
-          <ChatPreviews items={chatPreviews} />
+          chatPreviews.map((item) => <Preview chatPreview={item} />)
         )}
       </div>
     </div>
   );
-}
-
-function ChatPreviews({ items }: { items: ChatPreview[] }): JSX.Element {
-  const { replace } = useRouter();
-
-  return (
-    <>
-      {items.map((item) => {
-        return (
-          <div
-            onClick={() => replace(`http://localhost:3001/chat/${item.userId}`)}
-            key={Number(item.userId)}
-            className="flex py-2 px-2 max-h-16 w-full hover:bg-zinc-600 rounded-md cursor-default"
-          >
-            <div className="flex rounded-full w-12 h-12 bg-white flex-shrink-0"></div>
-            <div className="ml-3 flex-grow overflow-hidden">
-              <div className="flex justify-between">
-                <span className="truncate pr-2 font-semibold">
-                  {item.userName}
-                </span>
-                <span className="block text-sm flex-shrink-0">
-                  {formatDate(item.sentAt)}
-                </span>
-              </div>
-
-              <div className="flex items-baseline">
-                {/* <CheckIcon className="w-3.5 h-3.5 flex-shrink-0 mr-1" /> */}
-                <div className="w-full truncate">{item.message}</div>
-                {/* <div className="bg-blue-500 text-sm text-center rounded-full flex-shrink-0 ml-1 h-5 w-5"></div> */}
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </>
-  );
-}
-
-function Contacts({ items }: { items: Contact[] }): JSX.Element {
-  const { replace } = useRouter();
-
-  return (
-    <>
-      {items.map((item) => {
-        return (
-          <div 
-            key={item.contactId}
-            onClick={() => replace(`http://localhost:3001/chat/${item.contactId}`)}
-            className="flex py-2 px-2 max-h-16 w-full hover:bg-zinc-600 rounded-md cursor-default">
-            <div className="flex rounded-full w-12 h-12 bg-white flex-shrink-0"></div>
-            <div className="ml-3 flex-grow overflow-hidden">
-              <div className="flex justify-between">
-                <span className="truncate pr-2 font-semibold">
-                  {item.name}
-                </span>
-              </div>
-              <div className="flex items-baseline">
-                <div className="w-full truncate ml-1">Email: {item.email}</div>
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </>
-  );
-}
-
-function formatDate(date: Date): string {
-  date = new Date();
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Months are 0-indexed
-  const day = date.getDate().toString().padStart(2, "0"); // Add leading zero if necessary
-
-  return `${year}-${month}-${day}`;
 }

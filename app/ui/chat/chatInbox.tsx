@@ -14,10 +14,10 @@ enum Tab {
 }
 
 type ChatInboxProps = {
-  setChat: (chat: Contact | null) => void,
+  setCurrentChat: (chat: Contact | null) => void,
 }
 
-export default function ChatInbox({ setChat }: ChatInboxProps) {
+export default function ChatInbox({ setCurrentChat }: ChatInboxProps) {
   const router = useRouter();
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -162,7 +162,7 @@ export default function ChatInbox({ setChat }: ChatInboxProps) {
       </div>
       <div className="flex flex-col mt-3 pr-4 max-w-full h-[700px] overflow-scroll">
         {currentTab === Tab.Contacts ? (
-          contacts.map((item) => <ContactCard contact={item} setChat={setChat}/>)
+          contacts.map((item) => <ContactCard contact={item} setCurrentChat={setCurrentChat}/>)
         ) : (
           chatPreviews.map((item) => <Preview chatPreview={item} />)
         )}

@@ -2,12 +2,12 @@ import { Contact } from "@/app/lib/definitions";
 
 interface ContactCardProps {
     contact: Contact,
-    setChat: (chat: Contact | null) => void
+    setCurrentChat: (chat: Contact | null) => void
 }
 
-export default function ContactCard({ contact, setChat }: ContactCardProps) {
+export default function ContactCard({ contact, setCurrentChat }: ContactCardProps) {
   return (
-    <div onClick={() => setChat(contact)} className="flex py-2 px-2 max-h-16 w-full hover:bg-zinc-600 rounded-md cursor-default">
+    <div onClick={() => setCurrentChat(contact)} className="flex py-2 px-2 max-h-16 w-full hover:bg-zinc-600 rounded-md cursor-default">
       <div className="flex rounded-full w-12 h-12 bg-white flex-shrink-0"></div>
       <div className="ml-3 flex-grow overflow-hidden">
         <div className="flex justify-between">

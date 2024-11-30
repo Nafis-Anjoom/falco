@@ -1,10 +1,9 @@
 "use client";
 
-import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
 import Sidebar from "../ui/sidebar";
 import ChatInbox from "../ui/chat/chatInbox";
-import { useState } from "react";
-import { Contact } from "../lib/definitions";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Chat, Contact, Message } from "../lib/definitions";
 import ChatPane from "../ui/chat/chatpane";
 
 type Socket = {
@@ -14,6 +13,7 @@ type Socket = {
 
 function useWebsocket(): Socket {
   const [isConnected, setIsconnected] = useState(false);
+  
   const websocket = new WebSocket("ws://localhost:3000/ws2");
   websocket.onopen = () => {
     setIsconnected(true);
@@ -33,26 +33,86 @@ function useWebsocket(): Socket {
   return { websocket, isConnected }
 }
 
+interface ChatClient {
+  currentUserId: bigint;
+  websocket: WebSocket;
+  isConnected: boolean;
+  currentChat: Chat | null;
+  setCurrentChat: (contact: Contact | null) => void;
+}
+
+function useChatClient(): ChatClient {
+  const [isConnected, setIsconnected] = useState(false);
+
+  // const storedChats = new Map<bigint, Chat>();
+  const storedChatsRef = useRef(new Map<bigint, Chat>());
+  const [currentChat, changeChat] = useState<Chat | null>(null);
+  const currentUserId = BigInt(12);
+  
+  const websocket = useMemo(() => {
+    const ws = new WebSocket("ws://localhost:3000/ws2");
+    ws.onopen = () => {
+      setIsconnected(true);
+      console.log("connected to message server");
+    };
+
+    ws.onerror = () => {
+      ws.close();
+      console.log("socket error. Closing connection.");
+    }
+
+    ws.onclose = () => {
+      setIsconnected(false);
+      console.log("Disconnected from WebSocket");
+    }
+
+    return ws;
+  }, []);
+
+  const setCurrentChat = useCallback((contact: Contact | null): void => {
+    // if contact in stored chat, then change state
+    // elese, fetch from server, store in map, then change state
+    if (!contact) {
+      return;
+    }
+
+    const chat = storedChatsRef.current.get(contact.contactId);
+    if (!chat) {
+      //fetch the data
+      console.log("fetching chat");
+      const fetchedChat: Chat = {
+        contact: contact,
+        messages: []
+      }
+
+      storedChatsRef.current.set(contact.contactId, fetchedChat);
+      changeChat(fetchedChat);
+    } else {
+      changeChat(chat);
+    }
+  }, []);
+
+  console.log("use chat client");
+
+  return {
+    currentUserId: currentUserId,
+    websocket: websocket,
+    isConnected: isConnected,
+    currentChat: currentChat,
+    setCurrentChat: setCurrentChat,
+  }
+}
+
 export default function Home() {
-  const socket = useWebsocket();
-  const [contact, setContact] = useState<null | Contact>(null);
+  const chatClient = useChatClient();
 
   return (
       <div className="flex h-screen">
         <Sidebar />
         <div className="flex h-full min-w-96">
-          <ChatInbox setChat={setContact} />
+          <ChatInbox setCurrentChat={chatClient.setCurrentChat} />
         </div>
-        {!contact ? <ChatPaneHome /> : <ChatPane contact={contact} />}
+        <ChatPane chat={chatClient.currentChat} />
       </div>
-  );
-}
-
-function ChatPaneHome() {
-  return (
-    <div className="flex flex-col justify-center items-center w-full h-full">
-      <ChatBubbleLeftRightIcon className="w-24 h-24" />
-      <span className="font-semibold text-lg">Start a chat</span>
-    </div>
   );
 }

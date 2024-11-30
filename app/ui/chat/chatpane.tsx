@@ -1,4 +1,7 @@
-import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
+import {
+  ChatBubbleLeftRightIcon,
+  PaperAirplaneIcon,
+} from "@heroicons/react/24/outline";
 import Message from "./message";
 import React, { useRef, useState } from "react";
 import {
@@ -8,13 +11,22 @@ import {
   encodeMessageSend,
   encodePacket,
 } from "@/app/lib/protocol";
-import { Contact } from "@/app/lib/definitions";
+import { Chat } from "@/app/lib/definitions";
 
 type ChatPaneProps = {
-  contact: Contact;
-}
+  chat: Chat | null;
+};
 
-export default function ChatPane({ contact }: ChatPaneProps) {
+export default function ChatPane({ chat }: ChatPaneProps) {
+  if (!chat) {
+    return (
+      <div className="flex flex-col justify-center items-center w-full h-full">
+        <ChatBubbleLeftRightIcon className="w-24 h-24" />
+        <span className="font-semibold text-lg">Start a chat</span>
+      </div>
+    );
+  }
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<MessageSend[]>([]);
 
@@ -51,25 +63,24 @@ export default function ChatPane({ contact }: ChatPaneProps) {
       version: 1,
       payloadType: PayloadType.MessageSend,
       payloadLength: encodedMessage.length,
-      payload: encodedMessage
-    }
+      payload: encodedMessage,
+    };
     const encodedPacket = encodePacket(packet);
   }
 
   return (
     <div className="flex overflow-hidden flex-col w-full h-screen">
-      {/* top bar */}
       <div className="flex flex-shrink-0 flex-grow-0 bg-zinc-800 w-full max-h-14 p-2">
         <div className="flex rounded-full w-10 h-10 bg-white flex-shrink-0"></div>
-        <div className="ml-4 font-bold text-lg">{contact.name}</div>
+        <div className="ml-4 font-bold text-lg">{chat.contact.name}</div>
       </div>
-      {/* top bar */}
       <div className="flex flex-grow flex-col w-full overflow-y-scroll px-7">
         {messages.map((message, index) => {
-          return <Message key={index} isOutgoing={true} content={message.content} />;
+          return (
+            <Message key={index} isOutgoing={true} content={message.content} />
+          );
         })}
       </div>
-      {/* <div className="flex flex-shrink-0 flex-grow-0 w-full border-t-2 border-zinc-800 min-h-20"> */}
       <div className="flex flex-shrink-0 flex-grow-0 w-full border-t-2 border-zinc-800">
         <div className="flex-grow ">
           <textarea
@@ -80,7 +91,6 @@ export default function ChatPane({ contact }: ChatPaneProps) {
           ></textarea>
         </div>
         <button onClick={handleNewMessage}>
-          {/* 479 */}
           <div className="flex items-center px-2 py-2 mx-4 flex-shrink-0 rounded-xl bg-blue-500 hover:bg-blue-600 hover:cursor-pointer">
             <PaperAirplaneIcon className="w-6 h-6" />
           </div>

@@ -1,6 +1,6 @@
 
 export interface Contact {
-  contactId: number;
+  contactId: bigint;
   name: string;
   email: string;
 }
@@ -17,4 +17,16 @@ export interface ChatPreview {
   userName: string;
   message: string;
   sentAt: Date;
+}
+
+export interface Message {
+  senderId: bigint;
+  recipientId: bigint;
+  content: string;
+  sentAt: Date;
+}
+
+export interface Chat {
+  contact: Contact;
+  messages: Message[];
 }

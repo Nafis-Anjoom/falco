@@ -1,34 +1,22 @@
+import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
+import React, { useRef } from "react";
 import {
-  ChatBubbleLeftRightIcon,
-  PaperAirplaneIcon,
-} from "@heroicons/react/24/outline";
-import Message from "./message";
-import React, { useRef, useState } from "react";
-import {
-  MessageSend,
   Packet,
   PayloadType,
   encodeMessageSend,
   encodePacket,
 } from "@/app/lib/protocol";
-import { Chat } from "@/app/lib/definitions";
+import { Chat, Message } from "@/app/lib/definitions";
+import clsx from "clsx";
 
 type ChatPaneProps = {
-  chat: Chat | null;
+  chat: Chat;
 };
 
 export default function ChatPane({ chat }: ChatPaneProps) {
-  if (!chat) {
-    return (
-      <div className="flex flex-col justify-center items-center w-full h-full">
-        <ChatBubbleLeftRightIcon className="w-24 h-24" />
-        <span className="font-semibold text-lg">Start a chat</span>
-      </div>
-    );
-  }
-
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [messages, setMessages] = useState<MessageSend[]>([]);
+  const sessionUserId = BigInt(15);
+  console.log(chat);
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === "Enter") {
@@ -47,14 +35,14 @@ export default function ChatPane({ chat }: ChatPaneProps) {
       return;
     }
 
-    const messageSend: MessageSend = {
-      senderId: BigInt(5),
-      recipientId: BigInt(1),
+    const messageSend: Message = {
+      senderId: BigInt(15),
+      recipientId: BigInt(chat.contact.contactId),
       sentAt: new Date(),
       content: message,
     };
 
-    setMessages([...messages, messageSend]);
+    // setMessages([...messages, messageSend]);
 
     textareaRef.current.value = "";
 
@@ -75,9 +63,13 @@ export default function ChatPane({ chat }: ChatPaneProps) {
         <div className="ml-4 font-bold text-lg">{chat.contact.name}</div>
       </div>
       <div className="flex flex-grow flex-col w-full overflow-y-scroll px-7">
-        {messages.map((message, index) => {
+        {chat.messages.map((message, index) => {
           return (
-            <Message key={index} isOutgoing={true} content={message.content} />
+            <div key={index} className={clsx( "flex w-full mt-2", {"justify-end": message.senderId === sessionUserId})}>
+                <div className={clsx( "max-w-96 bg-blue-500 text-white px-4 py-2 rounded-lg", {"bg-zinc-600": message.senderId === sessionUserId})} >
+                  {message.content}
+                </div>
+            </div>
           );
         })}
       </div>

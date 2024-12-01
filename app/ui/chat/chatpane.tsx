@@ -6,17 +6,17 @@ import {
   encodeMessageSend,
   encodePacket,
 } from "@/app/lib/protocol";
-import { Chat, Message } from "@/app/lib/definitions";
+import { Chat, Contact, Message } from "@/app/lib/definitions";
 import clsx from "clsx";
 
 type ChatPaneProps = {
-  chat: Chat;
+  contact: Contact;
+  messages: Message[];
 };
 
-export default function ChatPane({ chat }: ChatPaneProps) {
+export default function ChatPane({ contact, messages }: ChatPaneProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const sessionUserId = BigInt(15);
-  console.log(chat);
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === "Enter") {
@@ -37,7 +37,7 @@ export default function ChatPane({ chat }: ChatPaneProps) {
 
     const messageSend: Message = {
       senderId: BigInt(15),
-      recipientId: BigInt(chat.contact.contactId),
+      recipientId: BigInt(contact.contactId),
       sentAt: new Date(),
       content: message,
     };
@@ -60,10 +60,10 @@ export default function ChatPane({ chat }: ChatPaneProps) {
     <div className="flex overflow-hidden flex-col w-full h-screen">
       <div className="flex flex-shrink-0 flex-grow-0 bg-zinc-800 w-full max-h-14 p-2">
         <div className="flex rounded-full w-10 h-10 bg-white flex-shrink-0"></div>
-        <div className="ml-4 font-bold text-lg">{chat.contact.name}</div>
+        <div className="ml-4 font-bold text-lg">{contact.name}</div>
       </div>
       <div className="flex flex-grow flex-col w-full overflow-y-scroll px-7">
-        {chat.messages.map((message, index) => {
+        {messages.map((message, index) => {
           return (
             <div key={index} className={clsx( "flex w-full mt-2", {"justify-end": message.senderId === sessionUserId})}>
                 <div className={clsx( "max-w-96 bg-blue-500 text-white px-4 py-2 rounded-lg", {"bg-zinc-600": message.senderId === sessionUserId})} >

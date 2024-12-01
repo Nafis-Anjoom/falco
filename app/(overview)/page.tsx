@@ -89,14 +89,17 @@ interface ChatClient {
   currentUserId: bigint;
   websocket: WebSocket;
   isConnected: boolean;
-  currentChat: Chat | null;
+  currentContact: Contact | null;
+  messages: Message[];
   setCurrentChat: (contact: Contact | null) => void;
 }
 
 function useChatClient(): ChatClient {
   const [isConnected, setIsconnected] = useState(false);
-  const storedChatsRef = useRef(new Map<bigint, Chat>());
-  const [currentChat, changeChat] = useState<Chat | null>(null);
+  const storedMessagesRef = useRef(new Map<bigint, Message[]>());
+  // const [currentChat, changeChat] = useState<Chat | null>(null);
+  const [currentContact, setCurrentContact] = useState<Contact | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const currentUserId = BigInt(12);
   
   const websocket = useMemo(() => {
@@ -126,26 +129,23 @@ function useChatClient(): ChatClient {
       return;
     }
 
-    console.log("contact id: ", contact.contactId);
-    const chat = storedChatsRef.current.get(contact.contactId);
-    if (!chat) {
+    const messages = storedMessagesRef.current.get(contact.contactId);
+    if (!messages) {
       //fetch the data
       console.log("fetching chat contactId: ", contact.contactId);
-      const fetchedChat: Chat = {
-        contact: contact,
-        messages: []
-      }
-
+      let fetchedMessages: Message[] = [];
       if (BigInt(contact.contactId) === BigInt(18)) {
-        fetchedChat.messages = dummy2;
+        fetchedMessages = dummy2;
       } else {
-        fetchedChat.messages = dummy1;
+        fetchedMessages = dummy1;
       }
 
-      storedChatsRef.current.set(contact.contactId, fetchedChat);
-      changeChat(fetchedChat);
+      storedMessagesRef.current.set(contact.contactId, fetchedMessages);
+      setCurrentContact(contact);
+      setMessages(fetchedMessages);
     } else {
-      changeChat(chat);
+      setCurrentContact(contact);
+      setMessages(messages);
     }
   }, []);
 
@@ -155,7 +155,8 @@ function useChatClient(): ChatClient {
     currentUserId: currentUserId,
     websocket: websocket,
     isConnected: isConnected,
-    currentChat: currentChat,
+    currentContact: currentContact,
+    messages: messages,
     setCurrentChat: setCurrentChat,
   }
 }
@@ -169,7 +170,7 @@ export default function Home() {
         <div className="flex h-full min-w-96">
           <ChatInbox setCurrentChat={chatClient.setCurrentChat} />
         </div>
-        {chatClient.currentChat ? <ChatPane chat={chatClient.currentChat} /> : <ChatPaneSkeleton />}
+        {chatClient.currentContact ? <ChatPane contact={chatClient.currentContact} messages={chatClient.messages} /> : <ChatPaneSkeleton />}
       </div>
   );
 }

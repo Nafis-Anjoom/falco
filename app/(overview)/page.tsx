@@ -3,9 +3,10 @@
 import Sidebar from "../ui/sidebar";
 import ChatInbox from "../ui/chat/chatInbox";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Chat, Contact, Message } from "../lib/definitions";
+import { Contact, Message } from "../lib/definitions";
 import ChatPane from "../ui/chat/chatpane";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/16/solid";
+import { encodeMessageSend, encodePacket, Packet, PayloadType } from "../lib/protocol";
 
 const dummy1: Message[] = [
   {
@@ -91,13 +92,13 @@ interface ChatClient {
   isConnected: boolean;
   currentContact: Contact | null;
   messages: Message[];
+  sendMessage: (content: string) => void;
   setCurrentChat: (contact: Contact | null) => void;
 }
 
 function useChatClient(): ChatClient {
   const [isConnected, setIsconnected] = useState(false);
   const storedMessagesRef = useRef(new Map<bigint, Message[]>());
-  // const [currentChat, changeChat] = useState<Chat | null>(null);
   const [currentContact, setCurrentContact] = useState<Contact | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const currentUserId = BigInt(12);
@@ -121,6 +122,34 @@ function useChatClient(): ChatClient {
 
     return ws;
   }, []);
+
+  const sendMessage = useCallback((content: string): void => {
+    if (!currentContact) {
+      return;
+    }
+
+    console.log("prepping message: ", currentContact.contactId, content);
+    const messageSend: Message = {
+      senderId: BigInt(15),
+      recipientId: BigInt(currentContact.contactId),
+      sentAt: new Date(),
+      content: content,
+    };
+
+    const newMessages = [...messages, messageSend];
+    setMessages(newMessages);
+    storedMessagesRef.current.set(currentContact.contactId, newMessages);
+
+    const encodedMessage = encodeMessageSend(messageSend);
+    const packet: Packet = {
+      version: 1,
+      payloadType: PayloadType.MessageSend,
+      payloadLength: encodedMessage.length,
+      payload: encodedMessage,
+    };
+    const encodedPacket = encodePacket(packet);
+    //  TODO: send the packet via socket
+  }, [currentContact]);
 
   const setCurrentChat = useCallback((contact: Contact | null): void => {
     // if contact in stored chat, then change state
@@ -157,6 +186,7 @@ function useChatClient(): ChatClient {
     isConnected: isConnected,
     currentContact: currentContact,
     messages: messages,
+    sendMessage: sendMessage,
     setCurrentChat: setCurrentChat,
   }
 }
@@ -170,7 +200,13 @@ export default function Home() {
         <div className="flex h-full min-w-96">
           <ChatInbox setCurrentChat={chatClient.setCurrentChat} />
         </div>
-        {chatClient.currentContact ? <ChatPane contact={chatClient.currentContact} messages={chatClient.messages} /> : <ChatPaneSkeleton />}
+        {chatClient.currentContact ? 
+          <ChatPane 
+            contact={chatClient.currentContact}
+            messages={chatClient.messages} 
+            sendMessage={chatClient.sendMessage}
+          /> 
+          : <ChatPaneSkeleton />}
       </div>
   );
 }

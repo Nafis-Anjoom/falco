@@ -1,20 +1,15 @@
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import React, { useRef } from "react";
-import {
-  Packet,
-  PayloadType,
-  encodeMessageSend,
-  encodePacket,
-} from "@/app/lib/protocol";
-import { Chat, Contact, Message } from "@/app/lib/definitions";
+import { Contact, Message } from "@/app/lib/definitions";
 import clsx from "clsx";
 
 type ChatPaneProps = {
   contact: Contact;
   messages: Message[];
+  sendMessage: (content: string) => void;
 };
 
-export default function ChatPane({ contact, messages }: ChatPaneProps) {
+export default function ChatPane({ contact, messages, sendMessage }: ChatPaneProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const sessionUserId = BigInt(15);
 
@@ -30,30 +25,13 @@ export default function ChatPane({ contact, messages }: ChatPaneProps) {
       return;
     }
 
-    const message = textareaRef.current.value;
-    if (!message || message === "") {
+    const content = textareaRef.current.value;
+    if (!content || content === "") {
       return;
     }
 
-    const messageSend: Message = {
-      senderId: BigInt(15),
-      recipientId: BigInt(contact.contactId),
-      sentAt: new Date(),
-      content: message,
-    };
-
-    // setMessages([...messages, messageSend]);
-
+    sendMessage(content);
     textareaRef.current.value = "";
-
-    const encodedMessage = encodeMessageSend(messageSend);
-    const packet: Packet = {
-      version: 1,
-      payloadType: PayloadType.MessageSend,
-      payloadLength: encodedMessage.length,
-      payload: encodedMessage,
-    };
-    const encodedPacket = encodePacket(packet);
   }
 
   return (

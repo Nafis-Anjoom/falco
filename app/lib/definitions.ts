@@ -20,10 +20,12 @@ export interface ChatPreview {
 }
 
 export interface Message {
+  id?: bigint;
   senderId: bigint;
   recipientId: bigint;
+  sentAt?: Date;
+  timestamp?: Date;
   content: string;
-  sentAt: Date;
 }
 
 export interface Chat {

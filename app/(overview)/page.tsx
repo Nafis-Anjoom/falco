@@ -148,7 +148,8 @@ function useChatClient(): ChatClient {
       payload: encodedMessage,
     };
     const encodedPacket = encodePacket(packet);
-    //  TODO: send the packet via socket
+
+    websocket.send(encodedPacket.buffer);
   }
 
   const setCurrentChat = useCallback((contact: Contact | null): void => {

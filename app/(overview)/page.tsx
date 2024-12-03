@@ -6,7 +6,14 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { Contact, Message } from "../lib/definitions";
 import ChatPane from "../ui/chat/chatpane";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/16/solid";
-import { decodeMessageReceive, decodePacket, encodeMessageSend, encodePacket, Packet, PayloadType } from "../lib/protocol";
+import {
+  decodeMessageReceive,
+  decodePacket,
+  encodeMessageSend,
+  encodePacket,
+  Packet,
+  PayloadType
+} from "../lib/protocol";
 
 const dummy1: Message[] = [
   {
@@ -87,7 +94,6 @@ const dummy2: Message[] = [
 ];
 
 interface ChatClient {
-  currentUserId: bigint;
   websocket: WebSocket;
   isConnected: boolean;
   currentContact: Contact | null;
@@ -101,7 +107,6 @@ function useChatClient(): ChatClient {
   const storedMessagesRef = useRef(new Map<bigint, Message[]>());
   const [currentContact, setCurrentContact] = useState<Contact | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const currentUserId = BigInt(12);
   
   const websocket = useMemo(() => {
     const ws = new WebSocket("ws://localhost:3000/ws2");
@@ -125,9 +130,22 @@ function useChatClient(): ChatClient {
       const arrayBuffer = await blob.arrayBuffer();
       const bytes = new Uint8Array(arrayBuffer);
       const packet = decodePacket(bytes);
-      const message = decodeMessageReceive(packet.payload);
-      console.log("payload: ", packet.payload);
-      console.log("message: ", message);
+      const messageReceive = decodeMessageReceive(packet.payload);
+      
+      // TODO: implement inbox system
+      // When a message is received, adjust the inbox to display the chat on top
+      // if the message thread is already in the storage, append the messages
+      // else, just present the preview in the inbox
+      if (!storedMessagesRef.current.has(messageReceive.senderId)) {
+        console.log("msg received: ", messageReceive);
+      } else {
+        const newMessages = [...messages, messageReceive];
+        storedMessagesRef.current.set(messageReceive.senderId, newMessages);
+        if (currentContact && BigInt(currentContact.contactId) === BigInt(messageReceive.senderId)) {
+          setMessages(newMessages);
+        }
+      }
+
       return arrayBuffer;
     }
 
@@ -141,7 +159,8 @@ function useChatClient(): ChatClient {
 
     console.log("prepping message: ", currentContact.contactId, content);
     const messageSend: Message = {
-      senderId: BigInt(15),
+      // the server will correct the senderId
+      senderId: BigInt(0),
       recipientId: BigInt(currentContact.contactId),
       sentAt: new Date(),
       content: content,
@@ -175,11 +194,6 @@ function useChatClient(): ChatClient {
       //fetch the data
       console.log("fetching chat contactId: ", contact.contactId);
       let fetchedMessages: Message[] = [];
-      if (BigInt(contact.contactId) === BigInt(18)) {
-        fetchedMessages = dummy2;
-      } else {
-        fetchedMessages = dummy1;
-      }
 
       storedMessagesRef.current.set(contact.contactId, fetchedMessages);
       setCurrentContact(contact);
@@ -193,7 +207,6 @@ function useChatClient(): ChatClient {
   console.log("use chat client");
 
   return {
-    currentUserId: currentUserId,
     websocket: websocket,
     isConnected: isConnected,
     currentContact: currentContact,

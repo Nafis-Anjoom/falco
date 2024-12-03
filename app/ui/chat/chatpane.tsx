@@ -6,12 +6,12 @@ import clsx from "clsx";
 type ChatPaneProps = {
   contact: Contact;
   messages: Message[];
+  userId: bigint;
   sendMessage: (content: string) => void;
 };
 
-export default function ChatPane({ contact, messages, sendMessage }: ChatPaneProps) {
+export default function ChatPane({ contact, messages, sendMessage, userId }: ChatPaneProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const sessionUserId = BigInt(15);
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === "Enter") {
@@ -43,8 +43,8 @@ export default function ChatPane({ contact, messages, sendMessage }: ChatPanePro
       <div className="flex flex-grow flex-col w-full overflow-y-scroll px-7">
         {messages.map((message, index) => {
           return (
-            <div key={index} className={clsx( "flex w-full mt-2", {"justify-end": message.senderId === sessionUserId})}>
-                <div className={clsx( "max-w-96 bg-blue-500 text-white px-4 py-2 rounded-lg", {"bg-zinc-600": message.senderId === sessionUserId})} >
+            <div key={index} className={clsx( "flex w-full mt-2", {"justify-end": message.senderId === userId})}>
+                <div className={clsx( "max-w-96 bg-blue-500 text-white px-4 py-2 rounded-lg", {"bg-zinc-600": message.senderId === userId})} >
                   {message.content}
                 </div>
             </div>

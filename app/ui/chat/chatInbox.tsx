@@ -22,7 +22,7 @@ export default function ChatInbox({ setCurrentChat }: ChatInboxProps) {
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [chatPreviews, setChatPreviews] = useState<ChatPreview[]>([]);
+  const [inbox, setInbox] = useState<ChatPreview[]>([]);
   const [currentTab, setCurrentTab] = useState<Tab>(Tab.Chats);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export default function ChatInbox({ setCurrentChat }: ChatInboxProps) {
       }
     };
 
-    const fetchChatPreviews = async () => {
+    const fetchInbox = async () => {
       try {
         const response = await fetch(`http://localhost:3000/chat/preview`, {
           method: "GET",
@@ -85,7 +85,7 @@ export default function ChatInbox({ setCurrentChat }: ChatInboxProps) {
 
         if (response.ok) {
           const chatPreviews: ChatPreview[] = await response.json();
-          setChatPreviews(chatPreviews);
+          setInbox(chatPreviews);
         } else {
           const body = await response.json();
           console.log("error");
@@ -98,7 +98,7 @@ export default function ChatInbox({ setCurrentChat }: ChatInboxProps) {
     };
 
     if (currentTab === Tab.Chats) {
-      fetchChatPreviews();
+      fetchInbox();
       console.log("fetched previews");
     } else {
       fetchContacts();
@@ -164,7 +164,7 @@ export default function ChatInbox({ setCurrentChat }: ChatInboxProps) {
         {currentTab === Tab.Contacts ? (
           contacts.map((item) => <ContactCard contact={item} setCurrentChat={setCurrentChat}/>)
         ) : (
-          chatPreviews.map((item) => <Preview chatPreview={item} />)
+          inbox.map((item) => <Preview chatPreview={item} />)
         )}
       </div>
     </div>

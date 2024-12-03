@@ -123,7 +123,7 @@ function useChatClient(): ChatClient {
     return ws;
   }, []);
 
-  const sendMessage = useCallback((content: string): void => {
+  const sendMessage = (content: string): void => {
     if (!currentContact) {
       return;
     }
@@ -149,7 +149,7 @@ function useChatClient(): ChatClient {
     };
     const encodedPacket = encodePacket(packet);
     //  TODO: send the packet via socket
-  }, [currentContact]);
+  }
 
   const setCurrentChat = useCallback((contact: Contact | null): void => {
     // if contact in stored chat, then change state

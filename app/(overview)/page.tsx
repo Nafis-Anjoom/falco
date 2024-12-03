@@ -6,7 +6,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { Contact, Message } from "../lib/definitions";
 import ChatPane from "../ui/chat/chatpane";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/16/solid";
-import { encodeMessageSend, encodePacket, Packet, PayloadType } from "../lib/protocol";
+import { decodeMessageReceive, decodePacket, encodeMessageSend, encodePacket, Packet, PayloadType } from "../lib/protocol";
 
 const dummy1: Message[] = [
   {
@@ -118,6 +118,17 @@ function useChatClient(): ChatClient {
     ws.onclose = () => {
       setIsconnected(false);
       console.log("Disconnected from WebSocket");
+    }
+
+    ws.onmessage = async (event) => {
+      const blob: Blob = event.data;
+      const arrayBuffer = await blob.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      const packet = decodePacket(bytes);
+      const message = decodeMessageReceive(packet.payload);
+      console.log("payload: ", packet.payload);
+      console.log("message: ", message);
+      return arrayBuffer;
     }
 
     return ws;

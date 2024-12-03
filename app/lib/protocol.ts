@@ -75,12 +75,14 @@ export function decodeMessageSend(buffer: Uint8Array): Message {
 }
 
 export function decodeMessageReceive(bytes: Uint8Array): Message {
-    const view = new DataView(bytes.buffer);
+    // the underlying array buffer contains the whole packet
+    // the offset of 4 ignores the packet header
+    const view = new DataView(bytes.buffer, 4);
     
     const id = view.getBigInt64(0, false);
     const senderId = view.getBigInt64(8, false);
     const recipientId = view.getBigInt64(16, false);
-    const timestamp = new Date(Number(view.getBigInt64(24, false)));
+    const timestamp = new Date(Number(view.getBigInt64(24, false)) * 1000);
     const content = new TextDecoder().decode(bytes.subarray(32));
 
     return {
@@ -135,7 +137,7 @@ export function decodePacket(buffer: Uint8Array): Packet {
     const payloadType = view.getUint8(1);
     const payloadLength = view.getUint16(2, false);
 
-    const payload = buffer.subarray(4, 4 + payloadLength);
+    const payload = buffer.subarray(4);
 
     return { version, payloadType, payloadLength, payload };
 }

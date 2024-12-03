@@ -106,7 +106,7 @@ func (us *UserService) LoginHandler(writer http.ResponseWriter, request *http.Re
         SameSite: http.SameSiteLaxMode,
         MaxAge: 24 * 60 * 60,
         Secure: false,
-        HttpOnly: true,
+        HttpOnly: false,
     }
     http.SetCookie(writer, authCookie)
     http.SetCookie(writer, userIdCookie)

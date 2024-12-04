@@ -11,11 +11,11 @@ import (
 )
 
 type OneToOneMessage struct {
-	MessageId   int64
-	SenderId    int64
-	RecipientId int64
-	Content     string
-	TimeStamp   time.Time
+    MessageId   int64 `json:"messageId"`
+	SenderId    int64 `json:"senderId"`
+	RecipientId int64 `json:"recipientId"`
+	Content     string `json:"content"`
+	TimeStamp   time.Time `json:"timestamp"`
 }
 
 type MessageModel struct {

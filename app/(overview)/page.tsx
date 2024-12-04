@@ -1,7 +1,7 @@
 "use client";
 
 import Sidebar from "../ui/sidebar";
-import ChatInbox from "../ui/chat/chatInbox";
+import ChatInbox from "../ui/chat/chatInbox-v2";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Contact, Message } from "../lib/definitions";
 import ChatPane from "../ui/chat/chatpane";
@@ -149,7 +149,7 @@ export default function Home() {
     <div className="flex h-screen">
       <Sidebar />
       <div className="flex h-full min-w-96">
-        <ChatInbox setCurrentChat={setCurrentContact} />
+        <ChatInbox currentChat={currentContact} setCurrentChat={setCurrentContact} />
       </div>
       {currentContact ? (
         !isMessagesLoading ? (

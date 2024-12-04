@@ -1,13 +1,21 @@
 import { Contact } from "@/app/lib/definitions";
+import clsx from "clsx";
 
 interface ContactCardProps {
     contact: Contact,
     setCurrentChat: (chat: Contact | null) => void
+    active?: boolean
 }
 
-export default function ContactCard({ contact, setCurrentChat }: ContactCardProps) {
+export default function ContactCard({ contact, setCurrentChat, active }: ContactCardProps) {
   return (
-    <div onClick={() => setCurrentChat(contact)} className="flex py-2 px-2 max-h-16 w-full hover:bg-zinc-600 rounded-md cursor-default">
+    <div 
+      onClick={() => setCurrentChat(contact)}
+      className={clsx(
+        "flex py-2 px-2 my-1 max-h-16 w-full hover:bg-zinc-600 rounded-md cursor-default",
+        {"bg-blue-600": active}
+      )}
+    >
       <div className="flex rounded-full w-12 h-12 bg-white flex-shrink-0"></div>
       <div className="ml-3 flex-grow overflow-hidden">
         <div className="flex justify-between">

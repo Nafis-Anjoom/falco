@@ -30,6 +30,7 @@ func (app *application) routes() http.Handler {
     mux.HandleFunc("DELETE /user/{id}", app.userService.deleteUserByIdHandler) 
     mux.HandleFunc("POST /user", app.userService.createUserHandler) 
     mux.HandleFunc("POST /login", app.userService.LoginHandler)
+    mux.HandleFunc("POST /logout", app.userService.LogoutHandler)
 
     mux.HandleFunc("GET /contacts", app.contactsService.GetContactsHandler) 
     mux.HandleFunc("POST /contacts", app.contactsService.createContactHandler) 

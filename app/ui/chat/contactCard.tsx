@@ -13,7 +13,6 @@ export default function ContactCard({ contact, setCurrentChat }: ContactCardProp
         <div className="flex justify-between">
           <span className="truncate pr-2 font-semibold">{contact.name}</span>
         </div>
-
         <div className="flex items-baseline">
           <div className="w-full truncate ml-1">
             Email: {contact.email}

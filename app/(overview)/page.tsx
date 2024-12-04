@@ -2,7 +2,7 @@
 
 import Sidebar from "../ui/sidebar";
 import ChatInbox from "../ui/chat/chatInbox";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Contact, Message } from "../lib/definitions";
 import ChatPane from "../ui/chat/chatpane";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/16/solid";
@@ -12,67 +12,36 @@ import {
   encodeMessageSend,
   encodePacket,
   Packet,
-  PayloadType
+  PayloadType,
 } from "../lib/protocol";
+import Cookies from "js-cookie";
 
-interface ChatClient {
-  websocket: WebSocket;
-  isConnected: boolean;
-  currentContact: Contact | null;
-  messages: Message[];
-  sendMessage: (content: string) => void;
-  setCurrentChat: (contact: Contact | null) => void;
-}
-
-function useChatClient(): ChatClient {
-  const [isConnected, setIsconnected] = useState(false);
-  const storedMessagesRef = useRef(new Map<bigint, Message[]>());
+export default function Home() {
+  const storedMessagesRef = useRef(new Map<number, Message[]>());
+  const userIdRef = useRef(Number(Cookies.get("userId") ?? "0"));
   const [currentContact, setCurrentContact] = useState<Contact | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  
-  const websocket = useMemo(() => {
-    const ws = new WebSocket("ws://localhost:3000/ws2");
-    ws.onopen = () => {
-      setIsconnected(true);
-      console.log("connected to message server");
-    };
+  console.log("messages: ", messages);
 
-    ws.onerror = () => {
-      ws.close();
-      console.log("socket error. Closing connection.");
+  useEffect(() => {
+    if (!currentContact) {
+      return;
     }
 
-    ws.onclose = () => {
-      setIsconnected(false);
-      console.log("Disconnected from WebSocket");
+    console.log("current contact: ", currentContact);
+
+    const messages = storedMessagesRef.current.get(currentContact.contactId);
+    if (!messages) {
+      //fetch the data
+      console.log("fetching chat contactId: ", currentContact.contactId);
+      let fetchedMessages: Message[] = [];
+
+      storedMessagesRef.current.set(currentContact.contactId, fetchedMessages);
+      setMessages(fetchedMessages);
+    } else {
+      setMessages(messages);
     }
-
-    ws.onmessage = async (event) => {
-      const blob: Blob = event.data;
-      const arrayBuffer = await blob.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuffer);
-      const packet = decodePacket(bytes);
-      const messageReceive = decodeMessageReceive(packet.payload);
-      
-      // TODO: implement inbox system
-      // When a message is received, adjust the inbox to display the chat on top
-      // if the message thread is already in the storage, append the messages
-      // else, just present the preview in the inbox
-      if (!storedMessagesRef.current.has(messageReceive.senderId)) {
-        console.log("msg received: ", messageReceive);
-      } else {
-        const newMessages = [...messages, messageReceive];
-        storedMessagesRef.current.set(messageReceive.senderId, newMessages);
-        if (currentContact && BigInt(currentContact.contactId) === BigInt(messageReceive.senderId)) {
-          setMessages(newMessages);
-        }
-      }
-
-      return arrayBuffer;
-    }
-
-    return ws;
-  }, []);
+  }, [currentContact]);
 
   const sendMessage = (content: string): void => {
     if (!currentContact) {
@@ -82,8 +51,8 @@ function useChatClient(): ChatClient {
     console.log("prepping message: ", currentContact.contactId, content);
     const messageSend: Message = {
       // the server will correct the senderId
-      senderId: BigInt(0),
-      recipientId: BigInt(currentContact.contactId),
+      senderId: userIdRef.current,
+      recipientId: currentContact.contactId,
       sentAt: new Date(),
       content: content,
     };
@@ -102,67 +71,80 @@ function useChatClient(): ChatClient {
     const encodedPacket = encodePacket(packet);
 
     websocket.send(encodedPacket.buffer);
-  }
+  };
 
-  const setCurrentChat = useCallback((contact: Contact | null): void => {
-    // if contact in stored chat, then change state
-    // elese, fetch from server, store in map, then change state
-    if (!contact) {
-      return;
-    }
+  const websocket = useMemo(() => {
+    const ws = new WebSocket("ws://localhost:3000/ws2");
+    ws.onopen = () => {
+      console.log("connected to message server");
+    };
 
-    const messages = storedMessagesRef.current.get(contact.contactId);
-    if (!messages) {
-      //fetch the data
-      console.log("fetching chat contactId: ", contact.contactId);
-      let fetchedMessages: Message[] = [];
+    ws.onerror = () => {
+      ws.close();
+      console.log("socket error. Closing connection.");
+    };
 
-      storedMessagesRef.current.set(contact.contactId, fetchedMessages);
-      setCurrentContact(contact);
-      setMessages(fetchedMessages);
-    } else {
-      setCurrentContact(contact);
-      setMessages(messages);
-    }
+    ws.onclose = () => {
+      console.log("Disconnected from WebSocket");
+    };
+
+    return ws;
   }, []);
 
-  console.log("use chat client");
+  websocket.onmessage = async (event) => {
+    const blob: Blob = event.data;
+    const arrayBuffer = await blob.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    const packet = decodePacket(bytes);
+    const messageReceive = decodeMessageReceive(packet.payload);
 
-  return {
-    websocket: websocket,
-    isConnected: isConnected,
-    currentContact: currentContact,
-    messages: messages,
-    sendMessage: sendMessage,
-    setCurrentChat: setCurrentChat,
-  }
-}
-
-export default function Home() {
-  const chatClient = useChatClient();
+    // TODO: implement inbox system
+    // When a message is received, adjust the inbox to display the chat on top
+    // if the message thread is already in the storage, append the messages
+    // else, just present the preview in the inbox
+    console.log("messages on receipt: ", messages);
+    console.log("current contact in focus: ", currentContact);
+    if (!storedMessagesRef.current.has(messageReceive.senderId)) {
+      console.log("msg received: ", messageReceive);
+    } else {
+      const currentMessages = storedMessagesRef.current.get(messageReceive.senderId) ?? [];
+      // const newMessages = [...currentMessages, messageReceive];
+      const newMessages = [...messages, messageReceive];
+      storedMessagesRef.current.set(messageReceive.senderId, newMessages);
+      if (
+        currentContact &&
+        currentContact.contactId === messageReceive.senderId
+      ) {
+        setMessages(newMessages);
+      }
+    }
+  };
 
   return (
-      <div className="flex h-screen">
-        <Sidebar />
-        <div className="flex h-full min-w-96">
-          <ChatInbox setCurrentChat={chatClient.setCurrentChat} />
-        </div>
-        {chatClient.currentContact ? 
-          <ChatPane 
-            contact={chatClient.currentContact}
-            messages={chatClient.messages} 
-            sendMessage={chatClient.sendMessage}
-          /> 
-          : <ChatPaneSkeleton />}
+    <div className="flex h-screen">
+      <Sidebar />
+      <div className="flex h-full min-w-96">
+        <ChatInbox setCurrentChat={setCurrentContact} />
       </div>
+      {currentContact ? (
+        <ChatPane
+          userId={userIdRef.current}
+          contact={currentContact}
+          messages={messages}
+          sendMessage={sendMessage}
+        />
+      ) : (
+        <ChatPaneSkeleton />
+      )}
+    </div>
   );
 }
 
 function ChatPaneSkeleton() {
-    return (
-      <div className="flex flex-col justify-center items-center w-full h-full">
-        <ChatBubbleLeftRightIcon className="w-24 h-24" />
-        <span className="font-semibold text-lg">Start a chat</span>
-      </div>
-    );
+  return (
+    <div className="flex flex-col justify-center items-center w-full h-full">
+      <ChatBubbleLeftRightIcon className="w-24 h-24" />
+      <span className="font-semibold text-lg">Start a chat</span>
+    </div>
+  );
 }

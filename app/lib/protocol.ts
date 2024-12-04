@@ -1,8 +1,18 @@
 import { Message } from "./definitions";
 
 export enum PayloadType {
-    MessageSend = 6,
-    MessageReceive = 2
+	MSG_READ_SUCCESS,
+	MSG_READ_FAIL,
+	MSG_DELV_SUCCESS,
+	MSG_DELV_FAIL,
+	MSG_SENT_SUCCESS,
+	MSG_SENT_FAIL,
+    MSG_SEND,
+    MSG_RECEIVE,
+    SYNC_THREAD,
+	CONN_ERR,
+	CONN_FIN,
+	CONN_INIT
 }
 
 export interface Packet {
@@ -52,7 +62,7 @@ export function encodeMessageSendPacket(message: Message): Uint8Array {
 
     const packet: Packet = {
         version: 1,
-        payloadType: PayloadType.MessageSend,
+        payloadType: PayloadType.MSG_SEND,
         payloadLength: payload.length,
         payload: payload
     }

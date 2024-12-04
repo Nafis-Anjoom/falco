@@ -64,7 +64,7 @@ export default function Home() {
     const encodedMessage = encodeMessageSend(messageSend);
     const packet: Packet = {
       version: 1,
-      payloadType: PayloadType.MessageSend,
+      payloadType: PayloadType.MSG_SEND,
       payloadLength: encodedMessage.length,
       payload: encodedMessage,
     };
@@ -107,8 +107,6 @@ export default function Home() {
     if (!storedMessagesRef.current.has(messageReceive.senderId)) {
       console.log("msg received: ", messageReceive);
     } else {
-      const currentMessages = storedMessagesRef.current.get(messageReceive.senderId) ?? [];
-      // const newMessages = [...currentMessages, messageReceive];
       const newMessages = [...messages, messageReceive];
       storedMessagesRef.current.set(messageReceive.senderId, newMessages);
       if (

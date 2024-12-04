@@ -96,25 +96,29 @@ export default function Home() {
     const arrayBuffer = await blob.arrayBuffer();
     const bytes = new Uint8Array(arrayBuffer);
     const packet = decodePacket(bytes);
-    const messageReceive = decodeMessageReceive(packet.payload);
+    if (packet.payloadType == PayloadType.MSG_RECEIVE) {
+      const messageReceive = decodeMessageReceive(packet.payload);
 
-    // TODO: implement inbox system
-    // When a message is received, adjust the inbox to display the chat on top
-    // if the message thread is already in the storage, append the messages
-    // else, just present the preview in the inbox
-    console.log("messages on receipt: ", messages);
-    console.log("current contact in focus: ", currentContact);
-    if (!storedMessagesRef.current.has(messageReceive.senderId)) {
-      console.log("msg received: ", messageReceive);
-    } else {
-      const newMessages = [...messages, messageReceive];
-      storedMessagesRef.current.set(messageReceive.senderId, newMessages);
-      if (
-        currentContact &&
-        currentContact.contactId === messageReceive.senderId
-      ) {
-        setMessages(newMessages);
+      // TODO: implement inbox system
+      // When a message is received, adjust the inbox to display the chat on top
+      // if the message thread is already in the storage, append the messages
+      // else, just present the preview in the inbox
+      console.log("messages on receipt: ", messages);
+      console.log("current contact in focus: ", currentContact);
+      if (!storedMessagesRef.current.has(messageReceive.senderId)) {
+        console.log("msg received: ", messageReceive);
+      } else {
+        const newMessages = [...messages, messageReceive];
+        storedMessagesRef.current.set(messageReceive.senderId, newMessages);
+        if (
+          currentContact &&
+          currentContact.contactId === messageReceive.senderId
+        ) {
+          setMessages(newMessages);
+        }
       }
+    } else {
+      console.log("payload type not supported now: ", packet);
     }
   };
 

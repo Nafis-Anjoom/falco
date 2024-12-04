@@ -13,7 +13,7 @@ export default function ContactCard({ contact, setCurrentChat, active }: Contact
       onClick={() => setCurrentChat(contact)}
       className={clsx(
         "flex py-2 px-2 my-1 max-h-16 w-full hover:bg-zinc-600 rounded-md cursor-default",
-        {"bg-blue-600": active}
+        {"bg-blue-500": active}
       )}
     >
       <div className="flex rounded-full w-12 h-12 bg-white flex-shrink-0"></div>

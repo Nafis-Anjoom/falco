@@ -23,7 +23,7 @@ export default function ChatInbox({ setCurrentChat }: ChatInboxProps) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [inbox, setInbox] = useState<ChatPreview[]>([]);
-  const [currentTab, setCurrentTab] = useState<Tab>(Tab.Chats);
+  const [currentTab, setCurrentTab] = useState<Tab>(Tab.Contacts);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {

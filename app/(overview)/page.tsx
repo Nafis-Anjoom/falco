@@ -16,31 +16,12 @@ import {
 } from "../lib/protocol";
 import Cookies from "js-cookie";
 
-async function getMessageThread(contactId: number) {
-  try {
-    const response = await fetch(
-      `http://localhsot:300/thread-v2/${contactId}`,
-      {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      }
-    );
-
-    if (response.ok) {
-      const output: Message[] = await response.json();
-      return output;
-    }
-  } catch (error) {
-    throw error;
-  }
-}
-
 export default function Home() {
   const storedMessagesRef = useRef(new Map<number, Message[]>());
   const userIdRef = useRef(Number(Cookies.get("userId") ?? "0"));
   const [currentContact, setCurrentContact] = useState<Contact | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   console.log("messages: ", messages);
 
   useEffect(() => {
@@ -49,12 +30,12 @@ export default function Home() {
     }
 
     console.log("current contact: ", currentContact);
+    setIsMessagesLoading(true);
 
     const messages = storedMessagesRef.current.get(currentContact.contactId);
     if (!messages) {
       //fetch the data
       console.log("fetching chat contactId: ", currentContact.contactId);
-      // const fetchMessages = async () => {
       (async () => {
         try {
           const response = await fetch(
@@ -79,6 +60,8 @@ export default function Home() {
     } else {
       setMessages(messages);
     }
+
+    setIsMessagesLoading(false);
   }, [currentContact]);
 
   const sendMessage = (content: string): void => {
@@ -167,12 +150,15 @@ export default function Home() {
         <ChatInbox setCurrentChat={setCurrentContact} />
       </div>
       {currentContact ? (
-        <ChatPane
-          userId={userIdRef.current}
-          contact={currentContact}
-          messages={messages}
-          sendMessage={sendMessage}
-        />
+        !isMessagesLoading ?
+          <ChatPane
+            userId={userIdRef.current}
+            contact={currentContact}
+            messages={messages}
+            sendMessage={sendMessage}
+          />
+          :
+          <ChatPaneLoading />
       ) : (
         <ChatPaneSkeleton />
       )}
@@ -185,6 +171,15 @@ function ChatPaneSkeleton() {
     <div className="flex flex-col justify-center items-center w-full h-full">
       <ChatBubbleLeftRightIcon className="w-24 h-24" />
       <span className="font-semibold text-lg">Start a chat</span>
+    </div>
+  );
+}
+
+function ChatPaneLoading() {
+  return (
+    <div className="flex flex-col justify-center items-center w-full h-full">
+      <ChatBubbleLeftRightIcon className="w-24 h-24" />
+      <span className="font-semibold text-lg">Loading...</span>
     </div>
   );
 }

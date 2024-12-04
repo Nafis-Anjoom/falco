@@ -103,7 +103,7 @@ export default function ChatInbox({ currentChat, setCurrentChat }: ChatInboxProp
         <input
           className="w-full h-8 rounded-md px-2 text-black"
           type="text"
-          placeholder="Search chat and contacts"
+          placeholder="Search contacts"
         />
       </div>
       <div className="flex flex-col mt-3 pr-4 max-w-full h-[700px] overflow-scroll">

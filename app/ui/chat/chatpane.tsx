@@ -1,5 +1,5 @@
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { Contact, Message } from "@/app/lib/definitions";
 import clsx from "clsx";
 
@@ -13,6 +13,14 @@ type ChatPaneProps = {
 export default function ChatPane({ contact, messages, sendMessage, userId }: ChatPaneProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const chatPaneRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (chatPaneRef.current) {
+        chatPaneRef.current.scrollTop = chatPaneRef.current.scrollHeight;
+      }
+    }, 0);
+  }, [messages]);
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === "Enter") {
@@ -34,11 +42,6 @@ export default function ChatPane({ contact, messages, sendMessage, userId }: Cha
     sendMessage(content);
     textareaRef.current.value = "";
     // give the browser a moment to insert the new message before scrolling
-    setTimeout(() => {
-      if (chatPaneRef.current) {
-        chatPaneRef.current.scrollTop = chatPaneRef.current.scrollHeight;
-      }
-    }, 0);
   }
 
   return (

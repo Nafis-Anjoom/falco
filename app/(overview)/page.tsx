@@ -15,14 +15,35 @@ import {
   PayloadType,
 } from "../lib/protocol";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+
   const storedMessagesRef = useRef(new Map<number, Message[]>());
   const userIdRef = useRef(Number(Cookies.get("userId") ?? "0"));
   const [currentContact, setCurrentContact] = useState<Contact | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   console.log("messages: ", messages);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await fetch("http://localhost:3000/validate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          router.push("/login");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     if (!currentContact) {
@@ -34,7 +55,6 @@ export default function Home() {
 
     const messages = storedMessagesRef.current.get(currentContact.contactId);
     if (!messages) {
-      //fetch the data
       console.log("fetching chat contactId: ", currentContact.contactId);
       (async () => {
         try {
@@ -50,7 +70,10 @@ export default function Home() {
           if (response.ok) {
             const fetchedMessages: Message[] = await response.json();
             console.log(fetchedMessages);
-            storedMessagesRef.current.set(currentContact.contactId, fetchedMessages);
+            storedMessagesRef.current.set(
+              currentContact.contactId,
+              fetchedMessages
+            );
             setMessages(fetchedMessages);
           }
         } catch (error) {
@@ -150,15 +173,16 @@ export default function Home() {
         <ChatInbox setCurrentChat={setCurrentContact} />
       </div>
       {currentContact ? (
-        !isMessagesLoading ?
+        !isMessagesLoading ? (
           <ChatPane
             userId={userIdRef.current}
             contact={currentContact}
             messages={messages}
             sendMessage={sendMessage}
           />
-          :
+        ) : (
           <ChatPaneLoading />
+        )
       ) : (
         <ChatPaneSkeleton />
       )}

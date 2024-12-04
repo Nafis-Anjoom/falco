@@ -113,6 +113,33 @@ func (us *UserService) LoginHandler(writer http.ResponseWriter, request *http.Re
 	utils.WriteJSONResponse(writer, http.StatusOK, output)
 }
 
+func (us *UserService) LogoutHandler(writer http.ResponseWriter, request *http.Request) {
+    authCookie := &http.Cookie{
+        Name: "authToken",
+        Value: "",
+        Path: "/",
+        Domain: "localhost",
+        SameSite: http.SameSiteLaxMode,
+        MaxAge: -1,
+        Secure: false,
+        HttpOnly: true,
+    }
+
+    userIdCookie := &http.Cookie{
+        Name: "userId",
+        Value: "",
+        Path: "/",
+        Domain: "localhost",
+        SameSite: http.SameSiteLaxMode,
+        MaxAge: -1,
+        Secure: false,
+        HttpOnly: false,
+    }
+    http.SetCookie(writer, authCookie)
+    http.SetCookie(writer, userIdCookie)
+	utils.WriteJSONResponse(writer, http.StatusOK, "successfully logged out")
+}
+
 func (us *UserService) createUserHandler(writer http.ResponseWriter, request *http.Request) {
 	var input createUserRequest
 
@@ -145,7 +172,7 @@ func (us *UserService) createUserHandler(writer http.ResponseWriter, request *ht
 		return
 	}
 
-	tokenString, err := us.authService.NewSockAuthToken(id)
+	tokenString, err := us.authService.NewToken(id)
 	if err != nil {
 		utils.WriteErrorResponse(writer, request, http.StatusInternalServerError, err)
 		return

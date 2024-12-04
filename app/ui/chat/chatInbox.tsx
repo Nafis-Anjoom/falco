@@ -162,7 +162,7 @@ export default function ChatInbox({ setCurrentChat }: ChatInboxProps) {
       </div>
       <div className="flex flex-col mt-3 pr-4 max-w-full h-[700px] overflow-scroll">
         {currentTab === Tab.Contacts ? (
-          contacts.map((contact) => <ContactCard contact={contact} setCurrentChat={setCurrentChat}/>)
+          contacts.map((contact) => <ContactCard key={contact.contactId} contact={contact} setCurrentChat={setCurrentChat}/>)
         ) : (
           inbox.map((preview) => <Preview key={preview.userId} chatPreview={preview} />)
         )}

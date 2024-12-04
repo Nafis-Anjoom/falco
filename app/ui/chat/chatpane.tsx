@@ -6,7 +6,7 @@ import clsx from "clsx";
 type ChatPaneProps = {
   contact: Contact;
   messages: Message[];
-  userId: bigint;
+  userId: number;
   sendMessage: (content: string) => void;
 };
 
@@ -43,7 +43,7 @@ export default function ChatPane({ contact, messages, sendMessage, userId }: Cha
       <div className="flex flex-grow flex-col w-full overflow-y-scroll px-7">
         {messages.map((message, index) => {
           return (
-            <div key={index} className={clsx( "flex w-full mt-2", {"justify-end": message.senderId === userId})}>
+            <div key={index} className={clsx( "flex w-full mt-2", {"justify-end": message.senderId ===userId})}>
                 <div className={clsx( "max-w-96 bg-blue-500 text-white px-4 py-2 rounded-lg", {"bg-zinc-600": message.senderId === userId})} >
                   {message.content}
                 </div>

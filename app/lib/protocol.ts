@@ -19,8 +19,8 @@ export function encodeMessageSend(message: Message): Uint8Array {
     const buffer = new ArrayBuffer(24 + contentBytes.length);
     const view = new DataView(buffer);
 
-    view.setBigUint64(0, message.senderId, false);
-    view.setBigUint64(8, message.recipientId, false);
+    view.setBigUint64(0, BigInt(message.senderId), false);
+    view.setBigUint64(8, BigInt(message.recipientId), false);
 
     // timestamp could be null
     const timestamp = message.sentAt?.getTime();
@@ -40,8 +40,8 @@ export function encodeMessageSendPacket(message: Message): Uint8Array {
     const buffer = new ArrayBuffer(24 + contentBytes.length);
     const view = new DataView(buffer);
 
-    view.setBigUint64(0, message.senderId, false);
-    view.setBigUint64(8, message.recipientId, false);
+    view.setBigUint64(0, BigInt(message.senderId), false);
+    view.setBigUint64(8, BigInt(message.recipientId), false);
     // TODO: investigate default values
     const timestamp = message.sentAt?.getTime();
     view.setBigUint64(16, BigInt(timestamp ?? 0), false);
@@ -63,8 +63,8 @@ export function encodeMessageSendPacket(message: Message): Uint8Array {
 export function decodeMessageSend(buffer: Uint8Array): Message {
     const view = new DataView(buffer.buffer);
 
-    const senderId = view.getBigUint64(0, true);
-    const recipientId = view.getBigUint64(8, true);
+    const senderId = Number(view.getBigUint64(0, true));
+    const recipientId = Number(view.getBigUint64(8, true));
 
     const timestamp = view.getUint32(16, true);
     const sentAt = new Date(timestamp);
@@ -80,8 +80,8 @@ export function decodeMessageReceive(bytes: Uint8Array): Message {
     const view = new DataView(bytes.buffer, 4);
     
     const id = view.getBigInt64(0, false);
-    const senderId = view.getBigInt64(8, false);
-    const recipientId = view.getBigInt64(16, false);
+    const senderId = Number(view.getBigInt64(8, false));
+    const recipientId = Number(view.getBigInt64(16, false));
     const timestamp = new Date(Number(view.getBigInt64(24, false)) * 1000);
     const content = new TextDecoder().decode(bytes.subarray(32));
 
@@ -102,8 +102,8 @@ export function decodeMessageReceivePacket(bytes: Uint8Array): Message {
     const payloadLength = view.getUint16(2, false);
     
     const id = view.getBigInt64(4, false);
-    const senderId = view.getBigInt64(12, false);
-    const recipientId = view.getBigInt64(20, false);
+    const senderId = Number(view.getBigInt64(12, false));
+    const recipientId = Number(view.getBigInt64(20, false));
     const timestamp = new Date(Number(view.getBigInt64(28, false)));
     const content = new TextDecoder().decode(bytes.subarray(36));
 

@@ -1,19 +1,19 @@
 
 export interface Contact {
-  contactId: bigint;
+  contactId: number;
   name: string;
   email: string;
 }
 
 export interface User {
-  id: BigInteger;
+  id: number;
   firstName: string;
   lastName: string;
   email: string;
 }
 
 export interface ChatPreview {
-  userId: bigint;
+  userId: number;
   userName: string;
   message: string;
   sentAt: Date;
@@ -21,8 +21,8 @@ export interface ChatPreview {
 
 export interface Message {
   id?: bigint;
-  senderId: bigint;
-  recipientId: bigint;
+  senderId: number;
+  recipientId: number;
   sentAt?: Date;
   timestamp?: Date;
   content: string;

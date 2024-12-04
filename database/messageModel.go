@@ -11,10 +11,10 @@ import (
 )
 
 type OneToOneMessage struct {
-    MessageId   int64 `json:"messageId"`
-	SenderId    int64 `json:"senderId"`
-	RecipientId int64 `json:"recipientId"`
-	Content     string `json:"content"`
+	MessageId   int64     `json:"messageId"`
+	SenderId    int64     `json:"senderId"`
+	RecipientId int64     `json:"recipientId"`
+	Content     string    `json:"content"`
 	TimeStamp   time.Time `json:"timestamp"`
 }
 
@@ -37,7 +37,7 @@ func (mm *MessageModel) GetOneToOneMessage(msgId int64) (*OneToOneMessage, error
 }
 
 func (mm *MessageModel) GetOneToOneMessageThread(userId1, userId2 int64) ([]OneToOneMessage, error) {
-    sqlStmt := "select * from public.onetoonemessages where (senderid = $1 and recipientid = $2) or (senderid = $2 and recipientid = $1);"
+	sqlStmt := "select * from public.onetoonemessages where (senderid = $1 and recipientid = $2) or (senderid = $2 and recipientid = $1);"
 	rows, _ := mm.dbPool.Query(context.Background(), sqlStmt, userId1, userId2)
 
 	messages, err := pgx.CollectRows(rows, pgx.RowToStructByName[OneToOneMessage])

@@ -16,6 +16,26 @@ import {
 } from "../lib/protocol";
 import Cookies from "js-cookie";
 
+async function getMessageThread(contactId: number) {
+  try {
+    const response = await fetch(
+      `http://localhsot:300/thread-v2/${contactId}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      }
+    );
+
+    if (response.ok) {
+      const output: Message[] = await response.json();
+      return output;
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 export default function Home() {
   const storedMessagesRef = useRef(new Map<number, Message[]>());
   const userIdRef = useRef(Number(Cookies.get("userId") ?? "0"));
@@ -34,10 +54,28 @@ export default function Home() {
     if (!messages) {
       //fetch the data
       console.log("fetching chat contactId: ", currentContact.contactId);
-      let fetchedMessages: Message[] = [];
+      // const fetchMessages = async () => {
+      (async () => {
+        try {
+          const response = await fetch(
+            `http://localhost:3000/thread-v2/${currentContact.contactId}`,
+            {
+              method: "GET",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+            }
+          );
 
-      storedMessagesRef.current.set(currentContact.contactId, fetchedMessages);
-      setMessages(fetchedMessages);
+          if (response.ok) {
+            const fetchedMessages: Message[] = await response.json();
+            console.log(fetchedMessages);
+            storedMessagesRef.current.set(currentContact.contactId, fetchedMessages);
+            setMessages(fetchedMessages);
+          }
+        } catch (error) {
+          console.log("error: ", error);
+        }
+      })();
     } else {
       setMessages(messages);
     }

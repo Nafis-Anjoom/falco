@@ -18,6 +18,7 @@ func (app *application) routes() http.Handler {
 
     mux.HandleFunc("GET /thread", app.messageService.GetMessageThreadHandler) 
     mux.HandleFunc("GET /thread-v2/{id}", app.messageService.GetMessageThreadv2Handler) 
+    mux.HandleFunc("GET /thread-v2/{id}/totalPages", app.messageService.GetTotalPagesCountHandler) 
     mux.HandleFunc("GET /ws2", app.messageService.InitializeClientHandler)
     mux.HandleFunc("GET /chat/preview", app.messageService.GetChatPreviewsHandler)
     mux.HandleFunc("GET /ws", func(w http.ResponseWriter, r *http.Request) {

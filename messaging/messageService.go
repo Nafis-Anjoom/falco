@@ -140,6 +140,37 @@ func (ms *MessageService) GetMessageThreadv2Handler(writer http.ResponseWriter, 
 	utils.WriteJSONResponse(writer, http.StatusOK, messages)
 }
 
+func (ms *MessageService) GetTotalPagesCountHandler(writer http.ResponseWriter, request *http.Request) {
+    userId1 := utils.ContextGetUser(request);
+
+	param := request.PathValue("id")
+	if param == "" {
+		err := errors.New("missing id param")
+		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+		return
+	}
+
+	userId2, err := strconv.ParseInt(param, 10, 64)
+	if err != nil {
+		err := errors.New("id parameter is not an integer")
+		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+		return
+	}
+
+	if err != nil {
+		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+		return
+	}
+
+	pageCount, err := ms.models.Messages.GetTotalMessagesPages(userId1, userId2)
+	if err != nil {
+		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
+		return
+	}
+
+	utils.WriteJSONResponse(writer, http.StatusOK, pageCount)
+}
+
 func (ms *MessageService) Run() {
 	log.Println("started message service")
 	for {

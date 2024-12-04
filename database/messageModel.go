@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -20,6 +21,27 @@ type OneToOneMessage struct {
 
 type MessageModel struct {
 	dbPool *pgxpool.Pool
+}
+
+const MESSAGES_PER_PAGE = 30
+
+func (mm *MessageModel) GetTotalMessagesPages(userId1, userId2 int64) (int, error) {
+    sqlStmt := `
+    SELECT COUNT(messageId)
+    FROM public.oneToOneMessages
+    WHERE (senderId = $1 AND recipientId = $2)
+    OR (senderId = $2 AND recipientId = $2);
+    `
+    
+    row := mm.dbPool.QueryRow(context.Background(), sqlStmt, userId1, userId2)
+
+    var count int
+    err := row.Scan(&count)
+    if err != nil {
+        return -1, err
+    }
+
+    return int(math.Ceil(float64(count) / MESSAGES_PER_PAGE)), nil
 }
 
 func (mm *MessageModel) InsertOneToOneMessage(msg *OneToOneMessage) error {

@@ -28,24 +28,6 @@ export default function Home() {
   console.log("messages: ", messages);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const response = await fetch("http://localhost:3000/validate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          router.push("/login");
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
     if (!currentContact) {
       return;
     }

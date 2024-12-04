@@ -15,11 +15,8 @@ import {
   PayloadType,
 } from "../lib/protocol";
 import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const router = useRouter();
-
   const storedMessagesRef = useRef(new Map<number, Message[]>());
   const userIdRef = useRef(Number(Cookies.get("userId") ?? "0"));
   const [currentContact, setCurrentContact] = useState<Contact | null>(null);

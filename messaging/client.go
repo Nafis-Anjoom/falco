@@ -25,9 +25,12 @@ func (client *Client) readClient(ms *MessageService) {
 				log.Println("Closing connection with client: ", client.conn.RemoteAddr().String())
 			case websocket.IsCloseError(err, websocket.CloseAbnormalClosure):
 				log.Println("Abnormal closure. Closing connection with client: ", client.conn.RemoteAddr().String())
+			case websocket.IsCloseError(err, websocket.CloseGoingAway):
+				log.Println("Client going away. Closing connection with client: ", client.conn.RemoteAddr().String())
 			default:
 				log.Println("unknown error: ", err)
 			}
+            client.conn.Close()
 			break
 		}
 

@@ -179,7 +179,8 @@ func (ms *MessageService) Run() {
 			ms.activeConnections[user.userId] = user
 			log.Println("user registered", user.userId)
 		case userId := <-ms.deregister:
-			if _, found := ms.activeConnections[userId]; found {
+			if client, found := ms.activeConnections[userId]; found {
+                client.conn.Close()
 				delete(ms.activeConnections, userId)
 			}
 		case messageSend := <-ms.MessageBuff:

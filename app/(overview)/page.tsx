@@ -15,17 +15,36 @@ import {
   PayloadType,
 } from "../lib/protocol";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
   const storedMessagesRef = useRef(new Map<number, Message[]>());
   const userIdRef = useRef(Number(Cookies.get("userId") ?? "0"));
   const [currentContact, setCurrentContact] = useState<Contact | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   console.log("messages: ", messages);
 
   useEffect(() => {
-    if (!currentContact) {
+    (async () => {
+      const response = await fetch("http://localhost:3000/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        router.push("http://localhost:3001/login");
+      } else {
+        setIsLoggedIn(true);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!currentContact || !isLoggedIn) {
       return;
     }
 
@@ -147,23 +166,32 @@ export default function Home() {
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
-      <div className="flex h-full min-w-96">
-        <ChatInbox currentChat={currentContact} setCurrentChat={setCurrentContact} />
-      </div>
-      {currentContact ? (
-        !isMessagesLoading ? (
-          <ChatPane
-            userId={userIdRef.current}
-            contact={currentContact}
-            messages={messages}
-            sendMessage={sendMessage}
-          />
-        ) : (
-          <ChatPaneLoading />
-        )
+      {!isLoggedIn ? (
+        <PageLoading />
       ) : (
-        <ChatPaneSkeleton />
+        <>
+          <Sidebar />
+          <div className="flex h-full min-w-96">
+            <ChatInbox
+              currentChat={currentContact}
+              setCurrentChat={setCurrentContact}
+            />
+          </div>
+          {currentContact ? (
+            !isMessagesLoading ? (
+              <ChatPane
+                userId={userIdRef.current}
+                contact={currentContact}
+                messages={messages}
+                sendMessage={sendMessage}
+              />
+            ) : (
+              <ChatPaneLoading />
+            )
+          ) : (
+            <ChatPaneSkeleton />
+          )}
+        </>
       )}
     </div>
   );
@@ -185,4 +213,12 @@ function ChatPaneLoading() {
       <span className="font-semibold text-lg">Loading...</span>
     </div>
   );
+}
+
+function PageLoading() {
+  return (
+    <div className="flex h-full w-full items-center justify-center">
+      <span className="text-xl">loading...</span>
+    </div>
+  )
 }

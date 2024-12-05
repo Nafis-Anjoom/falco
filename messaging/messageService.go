@@ -78,38 +78,6 @@ func (ms *MessageService) InitializeClientHandler(writer http.ResponseWriter, re
 }
 
 func (ms *MessageService) GetMessageThreadHandler(writer http.ResponseWriter, request *http.Request) {
-	qp := request.URL.Query()
-
-	var err error
-	if !qp.Has("userId1") {
-		err = errors.New("missing userId1")
-		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
-		return
-	}
-	if !qp.Has("userId2") {
-		err = errors.New("missing userId2")
-		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
-		return
-	}
-
-	userId1, err := strconv.ParseInt(qp.Get("userId1"), 10, 64)
-	userId2, err := strconv.ParseInt(qp.Get("userId2"), 10, 64)
-
-	if err != nil {
-		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
-		return
-	}
-
-	messages, err := ms.models.Messages.GetOneToOneMessageThread(userId1, userId2)
-	if err != nil {
-		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
-		return
-	}
-
-	utils.WriteJSONResponse(writer, http.StatusOK, messages)
-}
-
-func (ms *MessageService) GetMessageThreadv2Handler(writer http.ResponseWriter, request *http.Request) {
     userId1 := utils.ContextGetUser(request);
 
 	param := request.PathValue("id")

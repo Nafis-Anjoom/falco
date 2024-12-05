@@ -1,7 +1,6 @@
 package main
 
 import (
-	"chat/messaging"
 	"net/http"
 )
 
@@ -9,21 +8,13 @@ func (app *application) routes() http.Handler {
     mux := http.NewServeMux()
 
     mux.HandleFunc("GET /", func(writer http.ResponseWriter, request *http.Request) {})
-    mux.HandleFunc("OPTIONS /*", func(writer http.ResponseWriter, request *http.Request) {
-		writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-        writer.WriteHeader(http.StatusNoContent)
-    })
 
     mux.HandleFunc("GET /echo", app.echoHandler)
 
-    mux.HandleFunc("GET /thread", app.messageService.GetMessageThreadHandler) 
-    mux.HandleFunc("GET /thread-v2/{id}", app.messageService.GetMessageThreadv2Handler) 
-    mux.HandleFunc("GET /thread-v2/{id}/totalPages", app.messageService.GetTotalPagesCountHandler) 
-    mux.HandleFunc("GET /ws2", app.messageService.InitializeClientHandler)
-    mux.HandleFunc("GET /chat/preview", app.messageService.GetChatPreviewsHandler)
-    mux.HandleFunc("GET /ws", func(w http.ResponseWriter, r *http.Request) {
-        messaging.ServeWs(app.messageService, w, r)
-    })
+    mux.HandleFunc("GET /chat/{id}", app.messageService.GetMessageThreadHandler) 
+    mux.HandleFunc("GET /chat/{id}/totalPages", app.messageService.GetTotalPagesCountHandler) 
+    mux.HandleFunc("GET /inbox", app.messageService.GetChatPreviewsHandler)
+    mux.HandleFunc("GET /ws", app.messageService.InitializeClientHandler)
 
     mux.HandleFunc("GET /user/me", app.userService.getCurrentUserHandler) 
     mux.HandleFunc("GET /user/{id}", app.userService.getUserByIdHandler) 

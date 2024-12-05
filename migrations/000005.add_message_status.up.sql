@@ -1,0 +1,3 @@
+ALTER TABLE public.oneToOneMessages
+ADD COLUMN seenAt TIMESTAMP,
+ADD COLUMN deliveredAt TIMESTAMP;

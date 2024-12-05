@@ -165,11 +165,11 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen">
+    <>
       {!isLoggedIn ? (
         <PageLoading />
       ) : (
-        <>
+        <div className="flex h-screen">
           <Sidebar />
           <div className="flex h-full min-w-96">
             <ChatInbox
@@ -191,9 +191,9 @@ export default function Home() {
           ) : (
             <ChatPaneSkeleton />
           )}
-        </>
+        </div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -208,17 +208,22 @@ function ChatPaneSkeleton() {
 
 function ChatPaneLoading() {
   return (
-    <div className="flex flex-col justify-center items-center w-full h-full">
-      <ChatBubbleLeftRightIcon className="w-24 h-24" />
-      <span className="font-semibold text-lg">Loading...</span>
+    <div className="flex h-screen">
+      <div className="flex flex-col justify-center items-center w-full h-full">
+        <ChatBubbleLeftRightIcon className="w-24 h-24" />
+        <span className="font-semibold text-lg">Loading...</span>
+      </div>
     </div>
   );
 }
 
 function PageLoading() {
   return (
-    <div className="flex h-full w-full items-center justify-center">
-      <span className="text-xl">loading...</span>
+    <div className="flex h-screen">
+      <div className="flex h-full w-full items-center justify-center">
+        <span className="text-xl">loading...</span>
+      </div>
     </div>
-  )
+
+  );
 }

@@ -1,7 +1,7 @@
 import { Contact } from "@/app/lib/definitions";
 import clsx from "clsx";
 
-interface ContactCardProps {
+type ContactCardProps = {
     contact: Contact,
     setCurrentChat: (chat: Contact | null) => void
     active?: boolean

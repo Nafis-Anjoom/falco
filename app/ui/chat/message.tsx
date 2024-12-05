@@ -1,6 +1,6 @@
 import clsx from "clsx";
 
-interface MessageProps {
+type MessageProps = {
     isOutgoing: boolean;
     content: string;
 }

@@ -1,24 +1,24 @@
-export interface Contact {
+export type Contact = {
   contactId: number;
   name: string;
   email: string;
 }
 
-export interface User {
+export type User = {
   id: number;
   firstName: string;
   lastName: string;
   email: string;
 }
 
-export interface ChatPreview {
+export type ChatPreview = {
   userId: number;
   userName: string;
   message: string;
   sentAt: Date;
 }
 
-export interface Message {
+export type Message = {
   id?: bigint;
   senderId: number;
   recipientId: number;
@@ -27,12 +27,12 @@ export interface Message {
   content: string;
 }
 
-export interface Chat {
+export type Chat = {
   contact: Contact;
   messages: Message[];
 }
 
-export interface Packet {
+export type Packet = {
   version: number; // uint8
   payloadType: PayloadType; //uint8
   payloadLength: number; // uint16
@@ -54,10 +54,9 @@ export enum PayloadType {
     CONN_INIT
 }
 
-export interface MessageSentSuccess {
+export type MessageSentSuccess = {
   messageId: bigint,
   recipientId: number,
   timestamp: Date,
   sentAt: Date
 }
-

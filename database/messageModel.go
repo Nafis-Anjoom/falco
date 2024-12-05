@@ -62,7 +62,11 @@ func (mm *MessageModel) GetOneToOneMessage(msgId int64) (*OneToOneMessage, error
 }
 
 func (mm *MessageModel) GetOneToOneMessageThread(userId1, userId2 int64) ([]OneToOneMessage, error) {
-	sqlStmt := "select  from public.onetoonemessages where (senderid = $1 and recipientid = $2) or (senderid = $2 and recipientid = $1);"
+	sqlStmt := `
+    SELECT messageId, senderId, recipientId, content, timestamp, seenAt, deliveredAt
+    FROM public.onetoonemessages
+    WHERE (senderid = $1 and recipientid = $2) or (senderid = $2 and recipientid = $1);`
+
 	rows, _ := mm.dbPool.Query(context.Background(), sqlStmt, userId1, userId2)
 
 	messages, err := pgx.CollectRows(rows, pgx.RowToStructByName[OneToOneMessage])

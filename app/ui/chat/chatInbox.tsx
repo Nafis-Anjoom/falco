@@ -77,7 +77,7 @@ export default function ChatInbox({ setCurrentChat }: ChatInboxProps) {
 
     const fetchInbox = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/chat/preview`, {
+        const response = await fetch(`http://localhost:3000/inbox`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
           credentials: "include",

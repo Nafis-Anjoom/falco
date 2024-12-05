@@ -38,7 +38,7 @@ export default function Home() {
       (async () => {
         try {
           const response = await fetch(
-            `http://localhost:3000/thread-v2/${currentContact.contactId}`,
+            `http://localhost:3000/chat/${currentContact.contactId}`,
             {
               method: "GET",
               headers: { "Content-Type": "application/json" },
@@ -97,7 +97,7 @@ export default function Home() {
   };
 
   const websocket = useMemo(() => {
-    const ws = new WebSocket("ws://localhost:3000/ws2");
+    const ws = new WebSocket("ws://localhost:3000/ws");
     ws.onopen = () => {
       console.log("connected to message server");
     };

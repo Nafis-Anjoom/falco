@@ -1,26 +1,5 @@
-import { Message } from "./definitions";
+import { Message, MessageSentSuccess, Packet, PayloadType } from "./definitions";
 
-export enum PayloadType {
-	MSG_READ_SUCCESS,
-	MSG_READ_FAIL,
-	MSG_DELV_SUCCESS,
-	MSG_DELV_FAIL,
-	MSG_SENT_SUCCESS,
-	MSG_SENT_FAIL,
-    MSG_SEND,
-    MSG_RECEIVE,
-    SYNC_THREAD,
-	CONN_ERR,
-	CONN_FIN,
-	CONN_INIT
-}
-
-export interface Packet {
-    version: number; // uint8
-    payloadType: PayloadType; //uint8
-    payloadLength: number; // uint16
-    payload: Uint8Array; // Byte array
-}
 
 export function encodeMessageSend(message: Message): Uint8Array {
     const encoder = new TextEncoder();
@@ -88,7 +67,7 @@ export function decodeMessageReceive(bytes: Uint8Array): Message {
     // the underlying array buffer contains the whole packet
     // the offset of 4 ignores the packet header
     const view = new DataView(bytes.buffer, 4);
-    
+
     const id = view.getBigInt64(0, false);
     const senderId = Number(view.getBigInt64(8, false));
     const recipientId = Number(view.getBigInt64(16, false));
@@ -104,25 +83,23 @@ export function decodeMessageReceive(bytes: Uint8Array): Message {
     }
 }
 
-export function decodeMessageReceivePacket(bytes: Uint8Array): Message {
-    const view = new DataView(bytes.buffer);
-    
-    const protocolVersion = view.getUint8(0);
-    const payloadType = view.getUint8(1);
-    const payloadLength = view.getUint16(2, false);
-    
-    const id = view.getBigInt64(4, false);
-    const senderId = Number(view.getBigInt64(12, false));
-    const recipientId = Number(view.getBigInt64(20, false));
-    const timestamp = new Date(Number(view.getBigInt64(28, false)));
-    const content = new TextDecoder().decode(bytes.subarray(36));
+//   MessageId: bigint,
+//   RecipientId: number,
+//   Timestamp: Date,
+//   SentAt: Date
+export function decodeMessageSentSuccess(bytes: Uint8Array): MessageSentSuccess {
+    const view = new DataView(bytes.buffer, 4);
+
+    const messageId = view.getBigInt64(0, false);
+    const recipientId = Number(view.getBigInt64(8, false));
+    const timestamp = new Date(Number(view.getBigInt64(16, false)) * 1000);
+    const sentAt = new Date(Number(view.getBigInt64(24, false)) * 1000);
 
     return {
-        id,
-        senderId,
-        recipientId,
-        timestamp,
-        content
+        messageId: messageId,
+        recipientId: recipientId,
+        timestamp: timestamp,
+        sentAt: sentAt
     }
 }
 

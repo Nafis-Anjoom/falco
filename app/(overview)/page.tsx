@@ -3,7 +3,7 @@
 import Sidebar from "../ui/sidebar";
 import ChatInbox from "../ui/chat/chatInbox-v2";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Contact, Message } from "../lib/definitions";
+import { Contact, Message, Packet, PayloadType } from "../lib/definitions";
 import ChatPane from "../ui/chat/chatpane";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/16/solid";
 import {
@@ -11,8 +11,6 @@ import {
   decodePacket,
   encodeMessageSend,
   encodePacket,
-  Packet,
-  PayloadType,
 } from "../lib/protocol";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";

@@ -61,6 +61,9 @@ export default function ChatPane({ contact, messages, sendMessage, userId }: Cha
           );
           return output;
         })}
+        {/* <div className="flex w-full mt-2 justify-end">
+            <div className="max-w-96 text-zinc-400 text-xs" >seen at 12:54pm</div>
+        </div> */}
       </div>
       <div className="flex flex-shrink-0 flex-grow-0 w-full border-t-2 border-zinc-800">
         <div className="flex-grow ">

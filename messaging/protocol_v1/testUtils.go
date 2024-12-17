@@ -1,4 +1,4 @@
-package protocol
+package protocol_v1
 
 import "testing"
 

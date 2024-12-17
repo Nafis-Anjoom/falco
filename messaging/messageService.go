@@ -4,7 +4,7 @@ import (
 	"chat/auth"
 	"chat/database"
 	"chat/messaging/idGenerator"
-	"chat/messaging/protocol"
+	protocol "chat/messaging/protocol_v1"
 	"chat/utils"
 	"errors"
 	"log"

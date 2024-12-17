@@ -1,4 +1,4 @@
-package protocol
+package protocol_v2
 
 import (
 	"encoding"
@@ -8,7 +8,7 @@ import (
 
 const (
 	MSG_RECEIVE_HEADER_SIZE = 32
-	MSG_SEND_HEADER_SIZE    = 24
+	MSG_SEND_HEADER_SIZE    = 60
 	MSG_SENT_SUCCESS_SIZE   = 32
 	SYNC_THREAD_SIZE        = 16
 )
@@ -63,6 +63,7 @@ type MessageSend struct {
 	SenderId    int64     `json:"sender_id"`
 	RecipientId int64     `json:"recipient_id"`
 	SentAt      time.Time `json:"sent_at"`
+	LocalUUID   string    `json:"local_uuid"` // 36 characters long uuid
 	Content     string    `json:"content"`
 }
 
@@ -72,6 +73,7 @@ func (ms *MessageSend) MarshalBinary() (data []byte, err error) {
 	binary.BigEndian.PutUint64(buffer[0:], uint64(ms.SenderId))
 	binary.BigEndian.PutUint64(buffer[8:], uint64(ms.RecipientId))
 	binary.BigEndian.PutUint64(buffer[16:], uint64(ms.SentAt.Unix()))
+	copy(buffer[24:60], ms.LocalUUID)
 	copy(buffer[MSG_SEND_HEADER_SIZE:], ms.Content)
 
 	return buffer, nil

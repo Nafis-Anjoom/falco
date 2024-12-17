@@ -4,7 +4,7 @@ import (
 	"chat/auth"
 	"chat/database"
 	"chat/messaging/idGenerator"
-	protocol "chat/messaging/protocol_v1"
+	protocol "chat/messaging/protocol_v2"
 	"chat/utils"
 	"errors"
 	"log"
@@ -176,7 +176,8 @@ func (ms *MessageService) handleOneToOneMessage(message *protocol.MessageSend) {
 		return
 	}
 
-	ms.ackMessage(messageId, message.SenderId, message.RecipientId, message.SentAt, timestamp)
+	// ms.ackMessage(messageId, message.SenderId, message.RecipientId, message.SentAt, timestamp)
+	ms.ackMessage(messageId, message, timestamp)
 
 	messageReceive := &protocol.MessageReceieve{
 		Id:          messageId,
@@ -203,17 +204,18 @@ func (ms *MessageService) sendMessageToRecipient(message *protocol.MessageReceie
 	client.writePacket(&packet)
 }
 
-func (ms *MessageService) ackMessage(messageId int64, senderId int64, recipientId int64,
-	sentAt time.Time, timestamp time.Time) {
+// func (ms *MessageService) ackMessage(messageId int64, senderId int64, recipientId int64,
+func (ms *MessageService) ackMessage(messageId int64, message *protocol.MessageSend, timestamp time.Time) {
 	messageSentAck := &protocol.MessageSentSuccess{
 		MessageId:   messageId,
-		RecipientId: recipientId,
+		RecipientId: message.RecipientId,
 		Timestamp:   timestamp,
-		SentAt:      sentAt,
+		SentAt:      message.SentAt,
+        LocalUUID: message.LocalUUID,
 	}
 
 	packet := protocol.NewPacket(protocol.MSG_SENT_SUCCESS, messageSentAck)
-	client, found := ms.activeConnections[senderId]
+	client, found := ms.activeConnections[message.SenderId]
 	// if client not active, then enqueue in message queue
 	if !found {
 		log.Printf("user %d not online\n")

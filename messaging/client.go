@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	protocol "chat/messaging/protocol_v1"
+	protocol "chat/messaging/protocol_v2"
 	"chat/utils"
 
 	"github.com/gorilla/websocket"

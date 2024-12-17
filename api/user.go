@@ -140,6 +140,10 @@ func (us *UserService) LogoutHandler(writer http.ResponseWriter, request *http.R
 	utils.WriteJSONResponse(writer, http.StatusOK, "successfully logged out")
 }
 
+func (us *UserService) ValidateHandler(writer http.ResponseWriter, request *http.Request) {
+    utils.WriteJSONResponse(writer, http.StatusOK, "validated")
+}
+
 func (us *UserService) createUserHandler(writer http.ResponseWriter, request *http.Request) {
 	var input createUserRequest
 

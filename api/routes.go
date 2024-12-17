@@ -22,6 +22,7 @@ func (app *application) routes() http.Handler {
     mux.HandleFunc("POST /user", app.userService.createUserHandler) 
     mux.HandleFunc("POST /login", app.userService.LoginHandler)
     mux.HandleFunc("POST /logout", app.userService.LogoutHandler)
+    mux.HandleFunc("POST /validate", app.userService.ValidateHandler)
 
     mux.HandleFunc("GET /contacts", app.contactsService.GetContactsHandler) 
     mux.HandleFunc("POST /contacts", app.contactsService.createContactHandler) 

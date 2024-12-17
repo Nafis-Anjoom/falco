@@ -1,4 +1,4 @@
-import { Message, MessageSentSuccess, Packet, PayloadType } from "./definitions";
+import { Message, MessageSentSuccess, Packet, PayloadType } from "./definitions_v1";
 
 
 export function encodeMessageSend(message: Message): Uint8Array {

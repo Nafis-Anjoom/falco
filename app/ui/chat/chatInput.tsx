@@ -8,7 +8,7 @@ import {
   PayloadType,
   encodeMessageSend,
   encodePacket,
-} from "@/app/lib/protocol";
+} from "@/app/lib/protocol_v1";
 import { SocketContext } from "@/app/lib/contexts";
 
 

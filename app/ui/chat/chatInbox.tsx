@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { NewContactModal } from "../modal/newContactModal";
 import { useDebouncedCallback } from "use-debounce";
-import { ChatPreview, Contact, User } from "@/app/lib/definitions";
+import { ChatPreview, Contact, User } from "@/app/lib/definitions_v1";
 import { useRouter } from "next/navigation";
 import { CheckIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";

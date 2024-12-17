@@ -1,4 +1,4 @@
-import { Message } from "./definitions";
+import { Message } from "./definitions_v1";
 
 export const dummy1: Message[] = [
   {

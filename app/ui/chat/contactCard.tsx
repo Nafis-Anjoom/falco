@@ -1,4 +1,4 @@
-import { Contact } from "@/app/lib/definitions";
+import { Contact } from "@/app/lib/definitions_v1";
 import clsx from "clsx";
 
 type ContactCardProps = {

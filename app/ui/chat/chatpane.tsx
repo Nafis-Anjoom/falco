@@ -1,6 +1,6 @@
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import React, { useEffect, useRef } from "react";
-import { Contact, Message } from "@/app/lib/definitions";
+import { Contact, Message } from "@/app/lib/definitions_v1";
 import clsx from "clsx";
 
 type ChatPaneProps = {

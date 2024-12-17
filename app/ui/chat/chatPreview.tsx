@@ -1,4 +1,4 @@
-import { ChatPreview } from "@/app/lib/definitions";
+import { ChatPreview } from "@/app/lib/definitions_v1";
 import { formatDate } from "@/app/lib/utils";
 
 type ChatPreviewProps = {

@@ -8,6 +8,7 @@ import ChatPane from "../ui/chat/chatpane";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/16/solid";
 import {
   decodeMessageReceive,
+  decodeMessageSentSuccess,
   decodePacket,
   encodeMessageSend,
   encodePacket,
@@ -131,36 +132,46 @@ export default function Home() {
     return ws;
   }, []);
 
-  websocket.onmessage = async (event) => {
-    const blob: Blob = event.data;
-    const arrayBuffer = await blob.arrayBuffer();
-    const bytes = new Uint8Array(arrayBuffer);
-    const packet = decodePacket(bytes);
-    if (packet.payloadType == PayloadType.MSG_RECEIVE) {
-      const messageReceive = decodeMessageReceive(packet.payload);
+  function handleMessageReceive(payload: Uint8Array) {
+    const messageReceive = decodeMessageReceive(payload);
 
-      // TODO: implement inbox system
-      // When a message is received, adjust the inbox to display the chat on top
-      // if the message thread is already in the storage, append the messages
-      // else, just present the preview in the inbox
-      console.log("messages on receipt: ", messages);
-      console.log("current contact in focus: ", currentContact);
-      if (!storedMessagesRef.current.has(messageReceive.senderId)) {
-        console.log("msg received: ", messageReceive);
-      } else {
-        const newMessages = [...messages, messageReceive];
-        storedMessagesRef.current.set(messageReceive.senderId, newMessages);
-        if (
-          currentContact &&
-          currentContact.contactId === messageReceive.senderId
-        ) {
-          setMessages(newMessages);
-        }
-      }
+    // TODO: implement inbox system
+    // When a message is received, adjust the inbox to display the chat on top
+    // if the message thread is already in the storage, append the messages
+    // else, just present the preview in the inbox
+    console.log("messages on receipt: ", messages);
+    console.log("current contact in focus: ", currentContact);
+    if (!storedMessagesRef.current.has(messageReceive.senderId)) {
+      console.log("msg received: ", messageReceive);
     } else {
-      console.log("payload type not supported now: ", packet);
+      const newMessages = [...messages, messageReceive];
+      storedMessagesRef.current.set(messageReceive.senderId, newMessages);
+      if (
+        currentContact &&
+        currentContact.contactId === messageReceive.senderId
+      ) {
+        setMessages(newMessages);
+      }
     }
-  };
+  }
+
+    websocket.onmessage = async (event) => {
+      const blob: Blob = event.data;
+      const arrayBuffer = await blob.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      const packet = decodePacket(bytes);
+      switch (packet.payloadType) {
+        case PayloadType.MSG_RECEIVE:
+          handleMessageReceive(packet.payload);
+          break;
+        case PayloadType.MSG_SENT_SUCCESS:
+          console.log("success: ", decodeMessageSentSuccess(packet.payload));
+          break;
+        default:
+          console.log("not supported");
+          break;
+      }
+    };
 
   return (
     <>
@@ -222,6 +233,5 @@ function PageLoading() {
         <span className="text-xl">loading...</span>
       </div>
     </div>
-
   );
 }

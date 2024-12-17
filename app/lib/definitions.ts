@@ -22,8 +22,10 @@ export type Message = {
   id?: bigint;
   senderId: number;
   recipientId: number;
-  sentAt?: Date;
-  timestamp?: Date;
+  sentAt?: Date | undefined;
+  deliveredAt?: Date | undefined;
+  seenAt?: Date | undefined;
+  timestamp?: Date | undefined;
   content: string;
 }
 

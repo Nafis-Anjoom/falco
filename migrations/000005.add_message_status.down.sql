@@ -1,3 +1,1 @@
-ALTER TABLE public.oneToOneMessages
-DROP COLUMN seenAt TIMESTAMP,
-DROP COLUMN deliveredAt TIMESTAMP;
+ALTER TABLE public.oneToOneMessages DROP COLUMN seenAt, DROP COLUMN deliveredAt;

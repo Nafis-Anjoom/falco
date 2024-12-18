@@ -1,52 +1,35 @@
-import { Message, MessageSentSuccess, Packet, PayloadType } from "./definitions_v1";
+import { Message, MessageSentSuccess, MessageType, Packet, PayloadType } from "./definitions_v2";
 
+const MESSAGE_SEND_HEADER_SIZE = 60;
+const MESSAGE_RECEIVE_HEADER_SIZE = 60;
 
 export function encodeMessageSend(message: Message): Uint8Array {
     const encoder = new TextEncoder();
-    const contentBytes = encoder.encode(message.content);
 
-    const buffer = new ArrayBuffer(24 + contentBytes.length);
+    // const buffer = new ArrayBuffer(MESSAGE_SEND_HEADER_SIZE + contentBytes.length);
+    const buffer = new ArrayBuffer(MESSAGE_SEND_HEADER_SIZE + message.content.length);
     const view = new DataView(buffer);
 
     view.setBigUint64(0, BigInt(message.senderId), false);
     view.setBigUint64(8, BigInt(message.recipientId), false);
 
-    // timestamp could be null
-    const timestamp = message.sentAt?.getTime();
-    view.setBigUint64(16, BigInt(timestamp ?? 0), false);
+    if (!message.sentAt) {
+        message.sentAt = new Date();
+    }
+    const timestamp = Math.floor(message.sentAt.getTime() / 1000);
+    view.setBigUint64(16, BigInt(timestamp), false);
 
-    const contentOffset = 24;
     const output = new Uint8Array(buffer);
+
+    const localUUIDOffset = 24;
+    const localUUIDBytes = encoder.encode(message.localUUID);
+    output.set(localUUIDBytes, localUUIDOffset);
+
+    const contentOffset = 60;
+    const contentBytes = encoder.encode(message.content);
     output.set(contentBytes, contentOffset);
 
     return output;
-}
-
-export function encodeMessageSendPacket(message: Message): Uint8Array {
-    const encoder = new TextEncoder();
-    const contentBytes = encoder.encode(message.content);
-
-    const buffer = new ArrayBuffer(24 + contentBytes.length);
-    const view = new DataView(buffer);
-
-    view.setBigUint64(0, BigInt(message.senderId), false);
-    view.setBigUint64(8, BigInt(message.recipientId), false);
-    // TODO: investigate default values
-    const timestamp = message.sentAt?.getTime();
-    view.setBigUint64(16, BigInt(timestamp ?? 0), false);
-
-    const contentOffset = 24;
-    const payload = new Uint8Array(buffer);
-    payload.set(contentBytes, contentOffset);
-
-    const packet: Packet = {
-        version: 1,
-        payloadType: PayloadType.MSG_SEND,
-        payloadLength: payload.length,
-        payload: payload
-    }
-
-    return encodePacket(packet);
 }
 
 export function decodeMessageSend(buffer: Uint8Array): Message {
@@ -60,7 +43,13 @@ export function decodeMessageSend(buffer: Uint8Array): Message {
 
     const content = new TextDecoder().decode(buffer.subarray(20));
 
-    return { senderId, recipientId, sentAt, content };
+    return {
+        type: MessageType.Send,
+        senderId,
+        recipientId,
+        sentAt,
+        content
+    };
 }
 
 export function decodeMessageReceive(bytes: Uint8Array): Message {
@@ -75,6 +64,7 @@ export function decodeMessageReceive(bytes: Uint8Array): Message {
     const content = new TextDecoder().decode(bytes.subarray(32));
 
     return {
+        type: MessageType.Receive,
         id,
         senderId,
         recipientId,
@@ -83,23 +73,19 @@ export function decodeMessageReceive(bytes: Uint8Array): Message {
     }
 }
 
-//   MessageId: bigint,
-//   RecipientId: number,
-//   Timestamp: Date,
-//   SentAt: Date
 export function decodeMessageSentSuccess(bytes: Uint8Array): MessageSentSuccess {
     const view = new DataView(bytes.buffer, 4);
 
     const messageId = view.getBigInt64(0, false);
     const recipientId = Number(view.getBigInt64(8, false));
     const timestamp = new Date(Number(view.getBigInt64(16, false)) * 1000);
-    const sentAt = new Date(Number(view.getBigInt64(24, false)) * 1000);
+    const localUUID = new TextDecoder().decode(bytes.subarray(24));
 
     return {
         messageId: messageId,
         recipientId: recipientId,
         timestamp: timestamp,
-        sentAt: sentAt
+        localUUID: localUUID
     }
 }
 

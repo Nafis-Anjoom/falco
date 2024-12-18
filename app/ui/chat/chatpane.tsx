@@ -1,6 +1,6 @@
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import React, { useEffect, useRef } from "react";
-import { Contact, Message } from "@/app/lib/definitions_v1";
+import { Contact, Message } from "@/app/lib/definitions_v2";
 import clsx from "clsx";
 
 type ChatPaneProps = {
@@ -51,9 +51,9 @@ export default function ChatPane({ contact, messages, sendMessage, userId }: Cha
         <div className="ml-4 font-bold text-lg">{contact.name}</div>
       </div>
       <div ref={chatPaneRef} className="flex flex-grow flex-col w-full overflow-y-scroll px-7 pb-3">
-        {messages.map((message, index) => {
+        {messages.map((message) => {
           const output = (
-            <div key={index} className={clsx( "flex w-full mt-2", {"justify-end": message.senderId ===userId})}>
+            <div key={message.localUUID} className={clsx( "flex w-full mt-2", {"justify-end": message.senderId ===userId})}>
                 <div className={clsx( "max-w-96 bg-blue-500 text-white px-4 py-2 rounded-lg", {"bg-zinc-600": message.senderId === userId})} >
                   {message.content}
                 </div>

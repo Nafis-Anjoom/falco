@@ -3,7 +3,7 @@
 import Sidebar from "../ui/sidebar";
 import ChatInbox from "../ui/chat/chatInbox-v2";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Contact, Message, Packet, PayloadType } from "../lib/definitions_v1";
+import { Contact, Message, MessageType, Packet, PayloadType } from "../lib/definitions_v2";
 import ChatPane from "../ui/chat/chatpane";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/16/solid";
 import {
@@ -12,7 +12,7 @@ import {
   decodePacket,
   encodeMessageSend,
   encodePacket,
-} from "../lib/protocol_v1";
+} from "../lib/protocol_v2";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 
@@ -66,6 +66,10 @@ export default function Home() {
 
           if (response.ok) {
             const fetchedMessages: Message[] = await response.json();
+            fetchedMessages.forEach((message) => {
+              message.localUUID = crypto.randomUUID();
+            });
+
             console.log(fetchedMessages);
             storedMessagesRef.current.set(
               currentContact.contactId,
@@ -92,10 +96,12 @@ export default function Home() {
     console.log("prepping message: ", currentContact.contactId, content);
     const messageSend: Message = {
       // the server will correct the senderId
+      type: MessageType.Send,
       senderId: userIdRef.current,
       recipientId: currentContact.contactId,
       sentAt: new Date(),
       content: content,
+      localUUID: crypto.randomUUID()
     };
 
     const newMessages = [...messages, messageSend];
@@ -134,6 +140,7 @@ export default function Home() {
 
   function handleMessageReceive(payload: Uint8Array) {
     const messageReceive = decodeMessageReceive(payload);
+    messageReceive.localUUID = crypto.randomUUID();
 
     // TODO: implement inbox system
     // When a message is received, adjust the inbox to display the chat on top

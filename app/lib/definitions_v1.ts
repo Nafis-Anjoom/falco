@@ -42,18 +42,18 @@ export type Packet = {
 }
 
 export enum PayloadType {
-    MSG_READ_SUCCESS,
-    MSG_READ_FAIL,
-    MSG_DELV_SUCCESS,
-    MSG_DELV_FAIL,
-    MSG_SENT_SUCCESS,
-    MSG_SENT_FAIL,
-    MSG_SEND,
-    MSG_RECEIVE,
-    SYNC_THREAD,
-    CONN_ERR,
-    CONN_FIN,
-    CONN_INIT
+  MSG_READ_SUCCESS,
+  MSG_READ_FAIL,
+  MSG_DELV_SUCCESS,
+  MSG_DELV_FAIL,
+  MSG_SENT_SUCCESS,
+  MSG_SENT_FAIL,
+  MSG_SEND,
+  MSG_RECEIVE,
+  SYNC_THREAD,
+  CONN_ERR,
+  CONN_FIN,
+  CONN_INIT
 }
 
 export type MessageSentSuccess = {

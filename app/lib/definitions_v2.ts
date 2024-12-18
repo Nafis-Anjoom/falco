@@ -18,8 +18,15 @@ export type ChatPreview = {
     sentAt: Date;
 }
 
+export enum MessageType  {
+    Send,
+    Receive
+}
+
 export type Message = {
+    type: MessageType
     id?: bigint;
+    localUUID?: string | undefined;
     senderId: number;
     recipientId: number;
     sentAt?: Date | undefined;
@@ -29,26 +36,11 @@ export type Message = {
     content: string;
 }
 
-export type MessageSend = {
-    senderId: number;
-    recipientId: number;
-    localId: number;
-    sentAt: Date;
-    content: string;
-}
-
-export type MessageReceive = {
-    id: bigint;
-    senderId: number;
-    recipientId: number;
-    timestamp: Date;
-    content: string;
-}
-
 export type MessageSentSuccess = {
+    recipientId: number;
     messageId: bigint;
-    localId: string;
     timestamp: Date;
+    localUUID: string;
 }
 
 export type Chat = {

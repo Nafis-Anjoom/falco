@@ -67,6 +67,11 @@ export default function Home() {
           if (response.ok) {
             const fetchedMessages: Message[] = await response.json();
             fetchedMessages.forEach((message) => {
+              if (message.senderId === userIdRef.current) {
+                message.type = MessageType.Send;
+              } else {
+                message.type = MessageType.Receive;
+              }
               message.localUUID = crypto.randomUUID();
             });
 
@@ -196,7 +201,6 @@ export default function Home() {
           {currentContact ? (
             !isMessagesLoading ? (
               <ChatPane
-                userId={userIdRef.current}
                 contact={currentContact}
                 messages={messages}
                 sendMessage={sendMessage}

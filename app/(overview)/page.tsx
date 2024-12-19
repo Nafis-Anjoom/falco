@@ -177,11 +177,7 @@ export default function Home() {
     // When a message is received, adjust the inbox to display the chat on top
     // if the message thread is already in the storage, append the messages
     // else, just present the preview in the inbox
-    console.log("messages on receipt: ", messages);
-    console.log("current contact in focus: ", currentContact);
-    if (!storedMessagesRef.current.has(messageReceive.senderId)) {
-      console.log("msg received: ", messageReceive);
-    } else {
+    if (storedMessagesRef.current.has(messageReceive.senderId)) {
       const currentMessages = storedMessagesRef.current.get(messageReceive.senderId) ?? [];
       const newMessages = [...currentMessages, messageReceive];
       storedMessagesRef.current.set(messageReceive.senderId, newMessages);

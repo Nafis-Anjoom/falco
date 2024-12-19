@@ -3,8 +3,6 @@ import { NewContactModal } from "../modal/newContactModal";
 import { useDebouncedCallback } from "use-debounce";
 import { Contact, User } from "@/app/lib/definitions_v1";
 import { useRouter } from "next/navigation";
-import { CheckIcon } from "@heroicons/react/24/outline";
-import clsx from "clsx";
 import ContactCard from "./contactCard";
 
 type ChatInboxProps = {
@@ -73,11 +71,14 @@ export default function ChatInbox({ currentChat, setCurrentChat }: ChatInboxProp
   }, []);
 
   const handleSearch = useDebouncedCallback(async (query: string) => {
-    if (!!query || query == "") {
-      return;
+    let url: string;
+    if (!query || query == "") {
+      url = "http://localhost:3000/contacts"
+    } else {
+      url = `http://localhost:3000/contacts?q=${query}`
     }
 
-    const response = await fetch(`http://localhost:3000/contacts?q=${query}`, {
+    const response = await fetch(url, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -89,7 +90,7 @@ export default function ChatInbox({ currentChat, setCurrentChat }: ChatInboxProp
     } else {
       console.log("error");
     }
-  });
+  }, 300);
 
   return (
     <div className="flex h-full w-full flex-col bg-zinc-800 pt-4 pl-4">
@@ -104,6 +105,7 @@ export default function ChatInbox({ currentChat, setCurrentChat }: ChatInboxProp
           className="w-full h-8 rounded-md px-2 text-black"
           type="text"
           placeholder="Search contacts"
+          onChange={(event) => handleSearch(event.target.value)}
         />
       </div>
       <div className="flex flex-col mt-3 pr-4 max-w-full h-[700px] overflow-scroll">

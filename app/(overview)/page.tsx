@@ -15,6 +15,7 @@ import {
 } from "../lib/protocol_v2";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import clsx from "clsx";
 
 export default function Home() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  console.log("messages: ", messages);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -125,19 +126,44 @@ export default function Home() {
     websocket.send(encodedPacket.buffer);
   };
 
-  const websocket = useMemo(() => {
-    const ws = new WebSocket("ws://localhost:3000/ws");
+  let websocket = useMemo(() => {
+    let ws = new WebSocket("ws://localhost:3000/ws");
     ws.onopen = () => {
+      setIsConnected(true);
       console.log("connected to message server");
     };
 
     ws.onerror = () => {
-      ws.close();
-      console.log("socket error. Closing connection.");
+      ws.close(1000);
+      setIsConnected(false);
+      console.log("socket error. Attempting to reconnect.");
+      setTimeout(() => {
+      websocket = new WebSocket("ws://localhost:3000/ws");
+        setTimeout(() => {
+        if (websocket.readyState === WebSocket.OPEN) {
+          console.log("reconnected");
+          setIsConnected(true);
+        } else {
+          console.log("reconnected failed");
+        }
+        }, 2000);
+      }, 3000);
     };
 
     ws.onclose = () => {
-      console.log("Disconnected from WebSocket");
+      setIsConnected(false);
+      console.log("Disconnected from WebSocket. Attempting to reconnect...");
+      setTimeout(() => {
+      websocket = new WebSocket("ws://localhost:3000/ws");
+        setTimeout(() => {
+        if (websocket.readyState === WebSocket.OPEN) {
+          console.log("reconnected");
+          setIsConnected(true);
+        } else {
+          console.log("reconnected failed");
+        }
+        }, 2000);
+      }, 3000);
     };
 
     return ws;
@@ -184,7 +210,7 @@ export default function Home() {
           break;
       }
     };
-
+    
   return (
     <>
       {!isLoggedIn ? (
@@ -211,6 +237,13 @@ export default function Home() {
           ) : (
             <ChatPaneSkeleton />
           )}
+          {!isConnected && 
+            <div 
+              className={clsx("absolute bg-red-600 px-4 py-1 rounded-xl bottom-3 left-14")}
+            >
+              Disconnected. Attempting to reconnect...
+            </div>
+          }
         </div>
       )}
     </>

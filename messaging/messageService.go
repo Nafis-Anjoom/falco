@@ -210,7 +210,6 @@ func (ms *MessageService) ackMessage(messageId int64, message *protocol.MessageS
 		MessageId:   messageId,
 		RecipientId: message.RecipientId,
 		Timestamp:   timestamp,
-		SentAt:      message.SentAt,
         LocalUUID: message.LocalUUID,
 	}
 

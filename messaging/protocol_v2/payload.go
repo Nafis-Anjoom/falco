@@ -9,7 +9,7 @@ import (
 const (
 	MSG_RECEIVE_HEADER_SIZE = 32
 	MSG_SEND_HEADER_SIZE    = 60
-	MSG_SENT_SUCCESS_SIZE   = 68
+	MSG_SENT_SUCCESS_SIZE   = 60
 	SYNC_THREAD_SIZE        = 16
 )
 
@@ -102,7 +102,6 @@ type MessageSentSuccess struct {
 	MessageId   int64     `json:"messageId"`
 	RecipientId int64     `json:"recipientId"`
 	Timestamp   time.Time `json:"timestamp"`
-	SentAt      time.Time `json:"sentAt"`
 	LocalUUID   string    `json:"localUUID"`
 }
 
@@ -112,8 +111,7 @@ func (ms *MessageSentSuccess) MarshalBinary() (data []byte, err error) {
 	binary.BigEndian.PutUint64(buffer[0:], uint64(ms.MessageId))
 	binary.BigEndian.PutUint64(buffer[8:], uint64(ms.RecipientId))
 	binary.BigEndian.PutUint64(buffer[16:], uint64(ms.Timestamp.Unix()))
-	binary.BigEndian.PutUint64(buffer[24:], uint64(ms.SentAt.Unix()))
-	copy(buffer[32:68], ms.LocalUUID)
+    copy(buffer[24:], ms.LocalUUID)
 
 	return buffer, nil
 }
@@ -123,9 +121,7 @@ func (ms *MessageSentSuccess) UnmarshalBinary(data []byte) error {
 	ms.RecipientId = int64(binary.BigEndian.Uint64(data[8:]))
 	timestamp := int64(binary.BigEndian.Uint64(data[16:]))
 	ms.Timestamp = time.Unix(timestamp, 0)
-	sentAt := int64(binary.BigEndian.Uint64(data[24:]))
-	ms.SentAt = time.Unix(sentAt, 0)
-	ms.LocalUUID = string(data[32:68])
+    ms.LocalUUID = string(data[24:])
 
 	return nil
 }

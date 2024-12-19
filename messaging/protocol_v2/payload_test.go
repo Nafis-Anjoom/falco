@@ -212,14 +212,7 @@ func testMessageSentSuccessPayload(expected []byte, result []byte, t *testing.T)
 		}
 	}
 
-    for i := 24; i < 32; i++ {
-		if expected[i] != result[i] {
-            t.Errorf("Incorrect SentAt encoding. Result: % x. Expected % x\n", expected[8:16], result[8:16])
-            break
-		}
-	}
-
-    for i := 32; i < 68; i++ {
+    for i := 24; i < 60; i++ {
 		if expected[i] != result[i] {
             t.Errorf("Incorrect localUUID encoding. Result: % x. Expected % x\n", expected[8:16], result[8:16])
             break

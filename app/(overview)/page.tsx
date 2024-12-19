@@ -182,11 +182,11 @@ export default function Home() {
     if (!storedMessagesRef.current.has(messageReceive.senderId)) {
       console.log("msg received: ", messageReceive);
     } else {
-      const newMessages = [...messages, messageReceive];
+      const currentMessages = storedMessagesRef.current.get(messageReceive.senderId) ?? [];
+      const newMessages = [...currentMessages, messageReceive];
       storedMessagesRef.current.set(messageReceive.senderId, newMessages);
       if (
-        currentContact &&
-        currentContact.contactId === messageReceive.senderId
+        currentContact && currentContact.contactId === messageReceive.senderId
       ) {
         setMessages(newMessages);
       }

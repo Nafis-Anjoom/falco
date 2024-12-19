@@ -48,12 +48,10 @@ export default function Home() {
       return;
     }
 
-    console.log("current contact: ", currentContact);
     setIsMessagesLoading(true);
 
     const messages = storedMessagesRef.current.get(currentContact.contactId);
     if (!messages) {
-      console.log("fetching chat contactId: ", currentContact.contactId);
       (async () => {
         try {
           const response = await fetch(
@@ -76,7 +74,6 @@ export default function Home() {
               message.localUUID = crypto.randomUUID();
             });
 
-            console.log(fetchedMessages);
             storedMessagesRef.current.set(
               currentContact.contactId,
               fetchedMessages
@@ -99,7 +96,6 @@ export default function Home() {
       return;
     }
 
-    console.log("prepping message: ", currentContact.contactId, content);
     const messageSend: Message = {
       // the server will correct the senderId
       type: MessageType.Send,
@@ -160,7 +156,7 @@ export default function Home() {
           console.log("reconnected");
           setIsConnected(true);
         } else {
-          console.log("reconnected failed");
+          console.log("reconnection failed");
         }
         }, 2000);
       }, 3000);

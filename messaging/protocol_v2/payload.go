@@ -111,7 +111,7 @@ func (ms *MessageSentSuccess) MarshalBinary() (data []byte, err error) {
 	binary.BigEndian.PutUint64(buffer[0:], uint64(ms.MessageId))
 	binary.BigEndian.PutUint64(buffer[8:], uint64(ms.RecipientId))
 	binary.BigEndian.PutUint64(buffer[16:], uint64(ms.Timestamp.Unix()))
-    copy(buffer[24:], ms.LocalUUID)
+	copy(buffer[24:], ms.LocalUUID)
 
 	return buffer, nil
 }
@@ -121,7 +121,7 @@ func (ms *MessageSentSuccess) UnmarshalBinary(data []byte) error {
 	ms.RecipientId = int64(binary.BigEndian.Uint64(data[8:]))
 	timestamp := int64(binary.BigEndian.Uint64(data[16:]))
 	ms.Timestamp = time.Unix(timestamp, 0)
-    ms.LocalUUID = string(data[24:])
+	ms.LocalUUID = string(data[24:])
 
 	return nil
 }

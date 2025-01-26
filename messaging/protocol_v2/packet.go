@@ -6,8 +6,8 @@ import (
 )
 
 const (
-    PACKET_HEADER_SIZE = 4
-    MAX_PACKET_LENGTH = 4096
+	PACKET_HEADER_SIZE = 4
+	MAX_PACKET_LENGTH  = 4096
 )
 
 var ErrorMaxSizeExceeded = errors.New("Max packet Size exceeded")
@@ -22,9 +22,9 @@ const (
 	MSG_DELV_FAIL
 	MSG_SENT_SUCCESS
 	MSG_SENT_FAIL
-    MSG_SEND
-    MSG_RECEIVE
-    SYNC_THREAD
+	MSG_SEND
+	MSG_RECEIVE
+	SYNC_THREAD
 	CONN_ERR
 	CONN_FIN
 	CONN_INIT
@@ -38,22 +38,22 @@ type Packet struct {
 }
 
 func (p *Packet) ToBytes() []byte {
-    output := make([]byte, PACKET_HEADER_SIZE + len(p.Payload))
-    output[0] = p.Version
-    output[1] = uint8(p.PayloadType)
-    binary.BigEndian.PutUint16(output[2:], p.PayloadLength)
-    copy(output[4:], p.Payload)
+	output := make([]byte, PACKET_HEADER_SIZE+len(p.Payload))
+	output[0] = p.Version
+	output[1] = uint8(p.PayloadType)
+	binary.BigEndian.PutUint16(output[2:], p.PayloadLength)
+	copy(output[4:], p.Payload)
 
-    return output
+	return output
 }
 
 func NewPacket(payloadType PayloadType, payload Payload) Packet {
-    payloadBinary, _ := payload.MarshalBinary()
+	payloadBinary, _ := payload.MarshalBinary()
 	packet := Packet{
-        Version: 1,
-        PayloadType: payloadType,
-        PayloadLength: uint16(payload.Length()),
-        Payload: payloadBinary,
+		Version:       1,
+		PayloadType:   payloadType,
+		PayloadLength: uint16(payload.Length()),
+		Payload:       payloadBinary,
 	}
 
 	return packet

@@ -43,7 +43,7 @@ func TestNewPacketMessageReceive(t *testing.T) {
 		t.Errorf("Expected payload length: %d. Got: %d", expected.PayloadLength, result.PayloadLength)
 	}
 
-	testMessageReceivePayload(result.Payload, expected.Payload, t)
+	testMessageReceiveBinaryPayload(result.Payload, expected.Payload, t)
 }
 
 func TestNewPacketMessageSentSuccess(t *testing.T) {
@@ -82,5 +82,5 @@ func TestNewPacketMessageSentSuccess(t *testing.T) {
 		t.Errorf("Expected payload length: %d. Got: %d", expected.PayloadLength, result.PayloadLength)
 	}
 
-	testMessageSentSuccessPayload(expected.Payload, result.Payload, t)
+	testMessageSentSuccessBinaryPayload(expected.Payload, result.Payload, t)
 }

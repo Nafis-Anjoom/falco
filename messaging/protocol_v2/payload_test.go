@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func TestMessageReceiveEncoding(t *testing.T) {
+func TestMessageReceiveBinaryEncoding(t *testing.T) {
 	messageIn := MessageReceieve{
 		Id:          1,
 		SenderId:    2,
@@ -23,10 +23,31 @@ func TestMessageReceiveEncoding(t *testing.T) {
 		0x68, 0x65, 0x6C, 0x6C, 0x6F,
 	}
 
-	testMessageReceivePayload(result, expected, t)
+	testMessageReceiveBinaryPayload(result, expected, t)
 }
 
-func TestMessageReceiveDecoding(t *testing.T) {
+func TestMessageReceiveJSONEncoding(t *testing.T) {
+	messageIn := MessageReceieve{
+		Id:          1,
+		SenderId:    2,
+		RecipientId: 3,
+		Timestamp:   time.Unix(12345678, 0),
+		Content:     "hello",
+	}
+
+	result, _ := messageIn.MarshalBinary()
+	expected := []byte{
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0xBC, 0x61, 0x4E,
+		0x68, 0x65, 0x6C, 0x6C, 0x6F,
+	}
+
+	testMessageReceiveBinaryPayload(result, expected, t)
+}
+
+func TestMessageReceiveBinaryDecoding(t *testing.T) {
 	input := []byte{
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
@@ -54,7 +75,7 @@ func TestMessageReceiveDecoding(t *testing.T) {
 	}
 }
 
-func TestMessageSendEncoding(t *testing.T) {
+func TestMessageSendBinaryEncoding(t *testing.T) {
 	messageIn := MessageSend{
 		SenderId:    2,
 		RecipientId: 3,
@@ -72,10 +93,10 @@ func TestMessageSendEncoding(t *testing.T) {
 		0x68, 0x65, 0x6C, 0x6C, 0x6F,
 	}
 
-	testMessageSendPayload(expected, result, t)
+	testMessageSendBinaryPayload(expected, result, t)
 }
 
-func TestMessageSendDecoding(t *testing.T) {
+func TestMessageSendBinaryDecoding(t *testing.T) {
 	input := []byte{
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03,
@@ -104,7 +125,7 @@ func TestMessageSendDecoding(t *testing.T) {
 }
 
 // utils
-func testMessageSendPayload(expected []byte, result []byte, t *testing.T) {
+func testMessageSendBinaryPayload(expected []byte, result []byte, t *testing.T) {
 	if len(expected) != len(result) {
 		t.Fatalf("Expected size %d. Got %d", len(expected), len(result))
 	}
@@ -145,7 +166,7 @@ func testMessageSendPayload(expected []byte, result []byte, t *testing.T) {
 	}
 }
 
-func testMessageReceivePayload(b1 []byte, b2 []byte, t *testing.T) {
+func testMessageReceiveBinaryPayload(b1 []byte, b2 []byte, t *testing.T) {
 	if len(b1) != len(b2) {
 		t.Fatalf("Expected size 37. Got %d", len(b1))
 	}
@@ -186,7 +207,7 @@ func testMessageReceivePayload(b1 []byte, b2 []byte, t *testing.T) {
 	}
 }
 
-func testMessageSentSuccessPayload(expected []byte, result []byte, t *testing.T) {
+func testMessageSentSuccessBinaryPayload(expected []byte, result []byte, t *testing.T) {
 	if len(expected) != len(result) {
 		t.Fatalf("Expected size %d. Got %d", len(expected), len(result))
 	}
@@ -219,4 +240,3 @@ func testMessageSentSuccessPayload(expected []byte, result []byte, t *testing.T)
 		}
 	}
 }
-

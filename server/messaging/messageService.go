@@ -176,7 +176,6 @@ func (ms *MessageService) handleOneToOneMessage(message *protocol.MessageSend) {
 		return
 	}
 
-	// ms.ackMessage(messageId, message.SenderId, message.RecipientId, message.SentAt, timestamp)
 	ms.ackMessage(messageId, message, timestamp)
 
 	messageReceive := &protocol.MessageReceieve{
@@ -204,7 +203,6 @@ func (ms *MessageService) sendMessageToRecipient(message *protocol.MessageReceie
 	client.writePacket(&packet)
 }
 
-// func (ms *MessageService) ackMessage(messageId int64, senderId int64, recipientId int64,
 func (ms *MessageService) ackMessage(messageId int64, message *protocol.MessageSend, timestamp time.Time) {
 	messageSentAck := &protocol.MessageSentSuccess{
 		MessageId:   messageId,

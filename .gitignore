@@ -4,8 +4,6 @@
 */.air.toml
 */tmp
 
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 */node_modules
 */.pnp
@@ -37,9 +35,7 @@
 
 # env files (can opt-in for committing if needed)
 */.env*
-
-# vercel
-*/.vercel
+.envrc
 
 # typescript
 */*.tsbuildinfo

@@ -14,35 +14,20 @@ import {
 import Cookies from "js-cookie";
 import clsx from "clsx";
 import { useNavigate } from "react-router";
+import { useAuth } from "../context/AuthContext";
 
 export default function HomePage() {
-    const navgiate = useNavigate();
+    const { user } = useAuth();
+    const navigate = useNavigate();
     const storedMessagesRef = useRef(new Map<number, Message[]>());
     const userIdRef = useRef(Number(Cookies.get("userId") ?? "0"));
     const [currentContact, setCurrentContact] = useState<Contact | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [isMessagesLoading, setIsMessagesLoading] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
-        (async () => {
-            const response = await fetch("http://localhost:3000/validate", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-            });
-
-            if (!response.ok) {
-                navgiate("http://localhost:3001/login");
-            } else {
-                setIsLoggedIn(true);
-            }
-        })();
-    }, []);
-
-    useEffect(() => {
-        if (!currentContact || !isLoggedIn) {
+        if (!currentContact) {
             return;
         }
 
@@ -190,6 +175,7 @@ export default function HomePage() {
         const packet = decodePacket(bytes);
         switch (packet.payloadType) {
             case PayloadType.MSG_RECEIVE:
+                console.log('message received:', packet.payload);
                 handleMessageReceive(packet.payload);
                 break;
             case PayloadType.MSG_SENT_SUCCESS:
@@ -201,42 +187,41 @@ export default function HomePage() {
         }
     };
 
+    if (!user) {
+        navigate('/login');
+        return;
+    }
+
     return (
-        <>
-            {!isLoggedIn ? (
-                <PageLoading />
+        <div className="flex h-screen">
+            <Sidebar />
+            <div className="flex h-full min-w-96">
+                <ChatInbox
+                    currentChat={currentContact}
+                    setCurrentChat={setCurrentContact}
+                />
+            </div>
+            {currentContact ? (
+                !isMessagesLoading ? (
+                    <ChatPane
+                        contact={currentContact}
+                        messages={messages}
+                        sendMessage={sendMessage}
+                    />
+                ) : (
+                    <ChatPaneLoading />
+                )
             ) : (
-                <div className="flex h-screen">
-                    <Sidebar />
-                    <div className="flex h-full min-w-96">
-                        <ChatInbox
-                            currentChat={currentContact}
-                            setCurrentChat={setCurrentContact}
-                        />
-                    </div>
-                    {currentContact ? (
-                        !isMessagesLoading ? (
-                            <ChatPane
-                                contact={currentContact}
-                                messages={messages}
-                                sendMessage={sendMessage}
-                            />
-                        ) : (
-                            <ChatPaneLoading />
-                        )
-                    ) : (
-                        <ChatPaneSkeleton />
-                    )}
-                    {!isConnected &&
-                        <div
-                            className={clsx("absolute bg-red-600 px-4 py-1 rounded-xl bottom-3 left-14")}
-                        >
-                            Disconnected. Attempting to reconnect...
-                        </div>
-                    }
-                </div>
+                <ChatPaneSkeleton />
             )}
-        </>
+            {!isConnected &&
+                <div
+                    className={clsx("absolute bg-red-600 px-4 py-1 rounded-xl bottom-3 left-14")}
+                >
+                    Disconnected. Attempting to reconnect...
+                </div>
+            }
+        </div>
     );
 }
 
@@ -260,12 +245,12 @@ function ChatPaneLoading() {
     );
 }
 
-function PageLoading() {
-    return (
-        <div className="flex h-screen">
-            <div className="flex h-full w-full items-center justify-center">
-                <span className="text-xl">loading...</span>
-            </div>
-        </div>
-    );
-}
+// function PageLoading() {
+//     return (
+//         <div className="flex h-screen">
+//             <div className="flex h-full w-full items-center justify-center">
+//                 <span className="text-xl">loading...</span>
+//             </div>
+//         </div>
+//     );
+// }

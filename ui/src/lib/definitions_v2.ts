@@ -76,3 +76,12 @@ export enum PayloadType {
     CONN_FIN,
     CONN_INIT
 }
+
+export type ErrorResponse = {
+	http_status_code: number;
+	message: string;
+	timestamp: Date;
+	path: string;
+	method: string;
+	details: string;
+};

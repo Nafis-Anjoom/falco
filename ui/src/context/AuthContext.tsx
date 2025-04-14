@@ -7,66 +7,106 @@ import {
     useCallback,
 } from 'react';
 import { User } from '../lib/definitions_v2';
+import { ErrorResponse } from '../lib/definitions_v2';
 
-// Context shape
+type LoginResponse = {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    token: string;
+}
+
+type ValidateResponse = {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    token: string;
+}
+
 type IAuthContext = {
     user: User | null;
     login: (email: string, password: string) => Promise<void>;
     logout: () => void;
-    loading: boolean;
-    error: string | null;
+    isLoading: boolean;
 };
 
 const AuthContext = createContext<IAuthContext | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     const login = useCallback(async (email: string, password: string) => {
-        setLoading(true);
-        setError(null);
-
-        const response: Response = await fetch("http://localhost:3000/login", {
+        const response = await fetch("http://localhost:3000/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
             body: JSON.stringify({ email, password }),
         });
 
-        const body = await response.json();
         if (response.ok) {
-            setUser(body["user"]);
+            const loginResponse: LoginResponse = await response.json();
+            const user: User = {
+                id: loginResponse.id,
+                firstName: loginResponse.firstName,
+                lastName: loginResponse.lastName,
+                email: loginResponse.email,
+            }
+            setUser(user);
         } else {
-            setError(body["error"]);
+            const errorResponse: ErrorResponse = await response.json();
+            throw new Error(errorResponse.details);
         }
-
-        setLoading(false);
     }, []);
 
     const logout = () => {
         setUser(null);
     };
 
-    // Optionally check local storage or session on mount
+    const validate = async () => {
+        setIsLoading(true);
+        const response = await fetch("http://localhost:3000/user/me", {
+            method: "GET",
+            credentials: "include",
+        });
+
+        if (response.ok) {
+            const validateResponse: ValidateResponse = await response.json();
+            const user: User = {
+                id: validateResponse.id,
+                firstName: validateResponse.firstName,
+                lastName: validateResponse.lastName,
+                email: validateResponse.email,
+            }
+            setUser(user);
+        } else {
+            setUser(null);
+        }
+        setIsLoading(false);
+    }
+
     useEffect(() => {
-        // Load user if already logged in (not implemented here)
+        validate();
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading, error }}>
+        <AuthContext.Provider value={{
+            user,
+            login,
+            logout,
+            isLoading,
+        }}>
             {children}
         </AuthContext.Provider>
     );
 };
 
-// Custom hook
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
         throw new Error('useAuth must be used within an AuthProvider');
     }
     return context;
-};
-
+}

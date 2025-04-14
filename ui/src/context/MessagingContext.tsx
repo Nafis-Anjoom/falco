@@ -35,24 +35,47 @@ export const MessagingProvider: React.FC<React.PropsWithChildren> = ({
     const [currentChatContact, setCurrentChatContact] = useState<Contact | null>(null);
 
     useEffect(() => {
-        const socket = new WebSocket('ws://localhost:8080');
+        let socket = new WebSocket('ws://localhost:3000/ws');
         socketRef.current = socket;
 
-        socket.binaryType = 'arraybuffer';
-
         socket.onopen = () => {
-            console.log('WebSocket connected');
             setIsConnected(true);
-        };
+            console.log("connected to message server");
+        }
 
-        socket.onerror = (event) => {
-            console.error('WebSocket error', event);
-            setError('WebSocket error');
+        socket.onerror = () => {
+            socket.close(1000);
+            setIsConnected(false);
+            console.log("socket error. Attempting to reconnect.");
+            setTimeout(() => {
+                socket = new WebSocket("ws://localhost:3000/ws");
+                setTimeout(() => {
+                    if (socket.readyState === WebSocket.OPEN) {
+                        console.log("reconnected to message server");
+                        socketRef.current = socket;
+                        setIsConnected(true);
+                    } else {
+                        console.log("reconnected failed");
+                    }
+                }, 2000);
+            }, 3000);
         };
 
         socket.onclose = () => {
-            console.log('WebSocket closed');
             setIsConnected(false);
+            console.log("Disconnected from WebSocket. Attempting to reconnect...");
+            setTimeout(() => {
+                socket = new WebSocket("ws://localhost:3000/ws");
+                setTimeout(() => {
+                    if (socket.readyState === WebSocket.OPEN) {
+                        console.log("reconnected to message server");
+                        socketRef.current = socket;
+                        setIsConnected(true);
+                    } else {
+                        console.log("reconnection failed");
+                    }
+                }, 2000);
+            }, 3000);
         };
 
         socket.onmessage = async (event) => {

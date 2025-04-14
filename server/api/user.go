@@ -44,7 +44,7 @@ type loginRequest struct {
 }
 
 type loginResponse struct {
-	Id        int64  `josn:"id"`
+	Id        int64  `json:"id"`
 	Token     string `json:"token"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`

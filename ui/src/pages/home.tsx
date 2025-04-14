@@ -17,7 +17,7 @@ import { useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
 
 export default function HomePage() {
-    const { user } = useAuth();
+    const { user, isLoading } = useAuth();
     const navigate = useNavigate();
     const storedMessagesRef = useRef(new Map<number, Message[]>());
     const userIdRef = useRef(Number(Cookies.get("userId") ?? "0"));
@@ -25,6 +25,12 @@ export default function HomePage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isMessagesLoading, setIsMessagesLoading] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
+
+    useEffect(() => {
+        if (!isLoading && !user) {
+            navigate('/login');
+        }
+    }, [isLoading, user]);
 
     useEffect(() => {
         if (!currentContact) {
@@ -187,10 +193,8 @@ export default function HomePage() {
         }
     };
 
-    if (!user) {
-        navigate('/login');
-        return;
-    }
+    if (isLoading) return <div>Loading...</div>;
+    if (!user) return null;
 
     return (
         <div className="flex h-screen">

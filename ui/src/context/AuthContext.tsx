@@ -36,7 +36,7 @@ const AuthContext = createContext<IAuthContext | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     const login = useCallback(async (email: string, password: string) => {
         const response = await fetch("http://localhost:3000/login", {

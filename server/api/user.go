@@ -44,12 +44,15 @@ type loginRequest struct {
 }
 
 type loginResponse struct {
-	Id    int64  `josn:"id"`
-	Token string `json:"token"`
+	Id        int64  `josn:"id"`
+	Token     string `json:"token"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Email     string `json:"email"`
 }
 
 var (
-    emailPasswordMismatchError = errors.New("email or password incorrect")
+	emailPasswordMismatchError = errors.New("email or password incorrect")
 )
 
 func (us *UserService) LoginHandler(writer http.ResponseWriter, request *http.Request) {
@@ -83,65 +86,68 @@ func (us *UserService) LoginHandler(writer http.ResponseWriter, request *http.Re
 	}
 
 	output := loginResponse{
-        Id: user.Id,
+		Id:    user.Id,
 		Token: tokenString,
+        FirstName: user.FirstName,
+        LastName: user.LastName,
+        Email: user.Email,
 	}
-    
-    authCookie := &http.Cookie{
-        Name: "authToken",
-        Value: tokenString,
-        Path: "/",
-        Domain: "localhost",
-        SameSite: http.SameSiteLaxMode,
-        MaxAge: 24 * 60 * 60,
-        Secure: false,
-        HttpOnly: true,
-    }
 
-    userIdCookie := &http.Cookie{
-        Name: "userId",
-        Value: strconv.FormatInt(user.Id, 10),
-        Path: "/",
-        Domain: "localhost",
-        SameSite: http.SameSiteLaxMode,
-        MaxAge: 24 * 60 * 60,
-        Secure: false,
-        HttpOnly: false,
-    }
-    http.SetCookie(writer, authCookie)
-    http.SetCookie(writer, userIdCookie)
+	authCookie := &http.Cookie{
+		Name:     "authToken",
+		Value:    tokenString,
+		Path:     "/",
+		Domain:   "localhost",
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   24 * 60 * 60,
+		Secure:   false,
+		HttpOnly: true,
+	}
+
+	userIdCookie := &http.Cookie{
+		Name:     "userId",
+		Value:    strconv.FormatInt(user.Id, 10),
+		Path:     "/",
+		Domain:   "localhost",
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   24 * 60 * 60,
+		Secure:   false,
+		HttpOnly: false,
+	}
+	http.SetCookie(writer, authCookie)
+	http.SetCookie(writer, userIdCookie)
 	utils.WriteJSONResponse(writer, http.StatusOK, output)
 }
 
 func (us *UserService) LogoutHandler(writer http.ResponseWriter, request *http.Request) {
-    authCookie := &http.Cookie{
-        Name: "authToken",
-        Value: "",
-        Path: "/",
-        Domain: "localhost",
-        SameSite: http.SameSiteLaxMode,
-        MaxAge: -1,
-        Secure: false,
-        HttpOnly: true,
-    }
+	authCookie := &http.Cookie{
+		Name:     "authToken",
+		Value:    "",
+		Path:     "/",
+		Domain:   "localhost",
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+		Secure:   false,
+		HttpOnly: true,
+	}
 
-    userIdCookie := &http.Cookie{
-        Name: "userId",
-        Value: "",
-        Path: "/",
-        Domain: "localhost",
-        SameSite: http.SameSiteLaxMode,
-        MaxAge: -1,
-        Secure: false,
-        HttpOnly: false,
-    }
-    http.SetCookie(writer, authCookie)
-    http.SetCookie(writer, userIdCookie)
+	userIdCookie := &http.Cookie{
+		Name:     "userId",
+		Value:    "",
+		Path:     "/",
+		Domain:   "localhost",
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+		Secure:   false,
+		HttpOnly: false,
+	}
+	http.SetCookie(writer, authCookie)
+	http.SetCookie(writer, userIdCookie)
 	utils.WriteJSONResponse(writer, http.StatusOK, "successfully logged out")
 }
 
 func (us *UserService) ValidateHandler(writer http.ResponseWriter, request *http.Request) {
-    utils.WriteJSONResponse(writer, http.StatusOK, "validated")
+	utils.WriteJSONResponse(writer, http.StatusOK, "validated")
 }
 
 func (us *UserService) createUserHandler(writer http.ResponseWriter, request *http.Request) {
@@ -187,33 +193,33 @@ func (us *UserService) createUserHandler(writer http.ResponseWriter, request *ht
 		Token: tokenString,
 	}
 
-    authCookie := &http.Cookie{
-        Name: "authToken",
-        Value: tokenString,
-        Path: "/",
-        Domain: "http://localhost:3001",
-        MaxAge: 24 * 60 * 60,
-        Secure: false,
-        HttpOnly: true,
-    }
+	authCookie := &http.Cookie{
+		Name:     "authToken",
+		Value:    tokenString,
+		Path:     "/",
+		Domain:   "http://localhost:3001",
+		MaxAge:   24 * 60 * 60,
+		Secure:   false,
+		HttpOnly: true,
+	}
 
-    userIdCookie := &http.Cookie{
-        Name: "userId",
-        Value: strconv.FormatInt(id, 10),
-        Path: "/",
-        Domain: "http://localhost:3001",
-        MaxAge: 24 * 60 * 60,
-        Secure: false,
-        HttpOnly: true,
-    }
+	userIdCookie := &http.Cookie{
+		Name:     "userId",
+		Value:    strconv.FormatInt(id, 10),
+		Path:     "/",
+		Domain:   "http://localhost:3001",
+		MaxAge:   24 * 60 * 60,
+		Secure:   false,
+		HttpOnly: true,
+	}
 
-    http.SetCookie(writer, authCookie)
-    http.SetCookie(writer, userIdCookie)
+	http.SetCookie(writer, authCookie)
+	http.SetCookie(writer, userIdCookie)
 	utils.WriteJSONResponse(writer, http.StatusCreated, output)
 }
 
 func (us *UserService) getCurrentUserHandler(writer http.ResponseWriter, request *http.Request) {
-    userId := utils.ContextGetUser(request)
+	userId := utils.ContextGetUser(request)
 	user, err := us.models.Users.GetUserById(userId)
 	if err != nil {
 		switch {

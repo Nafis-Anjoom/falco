@@ -78,7 +78,7 @@ func (ms *MessageService) InitializeClientHandler(writer http.ResponseWriter, re
 }
 
 func (ms *MessageService) GetMessageThreadHandler(writer http.ResponseWriter, request *http.Request) {
-    userId1 := utils.ContextGetUser(request);
+	userId1 := utils.ContextGetUser(request)
 
 	param := request.PathValue("id")
 	if param == "" {
@@ -109,7 +109,7 @@ func (ms *MessageService) GetMessageThreadHandler(writer http.ResponseWriter, re
 }
 
 func (ms *MessageService) GetTotalPagesCountHandler(writer http.ResponseWriter, request *http.Request) {
-    userId1 := utils.ContextGetUser(request);
+	userId1 := utils.ContextGetUser(request)
 
 	param := request.PathValue("id")
 	if param == "" {
@@ -148,7 +148,7 @@ func (ms *MessageService) Run() {
 			log.Println("user registered", user.userId)
 		case userId := <-ms.deregister:
 			if client, found := ms.activeConnections[userId]; found {
-                client.conn.Close()
+				client.conn.Close()
 				delete(ms.activeConnections, userId)
 			}
 		case messageSend := <-ms.MessageBuff:
@@ -200,6 +200,7 @@ func (ms *MessageService) sendMessageToRecipient(message *protocol.MessageReceie
 
 	packet := protocol.NewPacket(protocol.MSG_RECEIVE, message)
 
+    log.Println(packet)
 	client.writePacket(&packet)
 }
 
@@ -208,14 +209,14 @@ func (ms *MessageService) ackMessage(messageId int64, message *protocol.MessageS
 		MessageId:   messageId,
 		RecipientId: message.RecipientId,
 		Timestamp:   timestamp,
-        LocalUUID: message.LocalUUID,
+		LocalUUID:   message.LocalUUID,
 	}
 
 	packet := protocol.NewPacket(protocol.MSG_SENT_SUCCESS, messageSentAck)
 	client, found := ms.activeConnections[message.SenderId]
 	// if client not active, then enqueue in message queue
 	if !found {
-		log.Printf("user %d not online\n")
+		log.Printf("user %d not online\n", message.RecipientId)
 		return
 	}
 

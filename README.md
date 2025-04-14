@@ -11,7 +11,7 @@ of designing a custom protocol over websocket that handles message sending/recei
 git clone https://github.com/Nafis-Anjoom/falco.git
 cd falco
 ``` 
-2. Install [Go][https://go.dev/doc/install]. If already installed, make sure it's up-to-date.
+2. Install [Go](https://go.dev/doc/install). If already installed, make sure it's up-to-date.
 3. Add environment variables for port, machine id, database url, and jwt secret.
 ```bash
 export PORT=3000

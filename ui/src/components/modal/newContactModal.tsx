@@ -67,8 +67,7 @@ export function NewContactModal() {
                 <PlusIcon className="w-5 h-5" />
             </button>
             <dialog
-                className="text-white backdrop:bg-zinc-900 backdrop:opacity-65 bg-zinc-700 rounded-lg"
-                ref={modalRef}
+                className="text-white backdrop:bg-zinc-900 backdrop:opacity-65 bg-zinc-700 rounded-lg open:fixed open:top-1/2 open:left-1/2 open:transform open:-translate-x-1/2 open:-translate-y-1/2" ref={modalRef}
             >
                 <div className="w-80 h-96 p-4 flex flex-col">
                     <form

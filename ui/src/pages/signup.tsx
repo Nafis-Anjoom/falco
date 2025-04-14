@@ -63,7 +63,7 @@ function SignupForm() {
           <div>
             <div className="relative">
               <input
-                className="peer bg-white block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm text-black outline-2 placeholder:text-gray-500"
+                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm text-black outline-2 placeholder:text-gray-500"
                 id="firstname"
                 type="text"
                 name="firstname"
@@ -76,7 +76,7 @@ function SignupForm() {
           <div className="mt-4">
             <div className="relative">
               <input
-                className="peer bg-white block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm text-black outline-2 placeholder:text-gray-500"
+                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm text-black outline-2 placeholder:text-gray-500"
                 id="lastname"
                 type="text"
                 name="lastname"
@@ -89,7 +89,7 @@ function SignupForm() {
           <div className="mt-4">
             <div className="relative">
               <input
-                className="peer bg-white block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm text-black outline-2 placeholder:text-gray-500"
+                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm text-black outline-2 placeholder:text-gray-500"
                 id="email"
                 type="email"
                 name="email"
@@ -102,7 +102,7 @@ function SignupForm() {
           <div className="mt-4">
             <div className="relative">
               <input
-                className="peer bg-white block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm text-black outline-2 placeholder:text-gray-500"
+                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm text-black outline-2 placeholder:text-gray-500"
                 id="password"
                 type="password"
                 name="password"
@@ -116,7 +116,7 @@ function SignupForm() {
           <div className="mt-4">
             <div className="relative">
               <input
-                className="peer bg-white block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm text-black outline-2 placeholder:text-gray-500"
+                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm text-black outline-2 placeholder:text-gray-500"
                 id="re-password"
                 type="password"
                 name="re-password"

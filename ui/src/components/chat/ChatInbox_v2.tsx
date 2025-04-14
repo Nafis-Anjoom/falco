@@ -102,7 +102,7 @@ export default function ChatInbox({ currentChat, setCurrentChat }: ChatInboxProp
             </div>
             <div className="flex mt-3 pr-4">
                 <input
-                    className="w-full bg-white h-8 rounded-md px-2 text-black"
+                    className="w-full h-8 rounded-md px-2 text-black"
                     type="text"
                     placeholder="Search contacts"
                     onChange={(event) => handleSearch(event.target.value)}

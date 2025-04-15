@@ -32,7 +32,7 @@ type createUserResponse struct {
 }
 
 type getUserResponse struct {
-	Id        int64  `josn:"id"`
+	Id        int64  `json:"id"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	Email     string `json:"email"`

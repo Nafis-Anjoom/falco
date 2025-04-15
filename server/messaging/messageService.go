@@ -94,11 +94,6 @@ func (ms *MessageService) GetMessageThreadHandler(writer http.ResponseWriter, re
 		return
 	}
 
-	if err != nil {
-		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
-		return
-	}
-
 	messages, err := ms.models.Messages.GetOneToOneMessageThread(userId1, userId2)
 	if err != nil {
 		utils.WriteErrorResponse(writer, request, http.StatusBadRequest, err)
